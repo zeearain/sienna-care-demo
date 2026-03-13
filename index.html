@@ -162,6 +162,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--warm-100);color:var(--tex
 .empty-state{text-align:center;padding:40px 20px;color:var(--text3)}
 .empty-state p{font-size:13px;margin-top:6px}
 
+.clickable-card{cursor:pointer;transition:box-shadow 0.15s,transform 0.15s}
+.clickable-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.10);transform:translateY(-1px)}
+.med-drill-tab.active{background:var(--blue-lt,#e8f0fe);color:#1a56db;border-color:#93c5fd;font-weight:600}
+.inc-filter.active{background:var(--sienna-lt);color:var(--sienna-dk);border-color:var(--sienna-mid);font-weight:600}
 .floor-btn.active{background:var(--sienna-lt);color:var(--sienna-dk);border-color:var(--sienna-mid);font-weight:500}
 .floor-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:7px;margin-top:4px}
 .scrollbar::-webkit-scrollbar-thumb{background:var(--warm-200);border-radius:2px}
@@ -242,10 +246,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--warm-100);color:var(--tex
     <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
       <div class="stats" id="dash-stats">
-        <div class="stat-card"><div class="stat-stripe" style="background:var(--sienna)"></div><div class="stat-lbl">Residents</div><div class="stat-val" id="stat-residents">—</div><div class="stat-sub" id="stat-rooms">Loading...</div></div>
-        <div class="stat-card"><div class="stat-stripe" style="background:var(--blue)"></div><div class="stat-lbl">Meds today</div><div class="stat-val" id="stat-meds" style="color:var(--blue)">—</div><div class="stat-sub" id="stat-meds-sub">Loading...</div></div>
-        <div class="stat-card"><div class="stat-stripe" style="background:var(--sienna)"></div><div class="stat-lbl">Open incidents</div><div class="stat-val" id="stat-incidents" style="color:var(--sienna-dk)">—</div><div class="stat-sub" id="stat-inc-sub">Loading...</div></div>
-        <div class="stat-card"><div class="stat-stripe" style="background:var(--green)"></div><div class="stat-lbl">Shift notes</div><div class="stat-val" id="stat-notes" style="color:var(--green)">—</div><div class="stat-sub">Logged today</div></div>
+        <div class="stat-card clickable-card" onclick="nav('residents',null);showPage('residents')" title="View all residents"><div class="stat-stripe" style="background:var(--sienna)"></div><div class="stat-lbl">Residents</div><div class="stat-val" id="stat-residents">—</div><div class="stat-sub" id="stat-rooms">Loading...</div></div>
+        <div class="stat-card clickable-card" onclick="openMedDrilldown('all')" title="View medication list"><div class="stat-stripe" style="background:var(--blue)"></div><div class="stat-lbl">Meds today</div><div class="stat-val" id="stat-meds" style="color:var(--blue)">—</div><div class="stat-sub" id="stat-meds-sub">Loading...</div></div>
+        <div class="stat-card clickable-card" onclick="nav('incidents',null);showPage('incidents')" title="View incidents"><div class="stat-stripe" style="background:var(--sienna)"></div><div class="stat-lbl">Open incidents</div><div class="stat-val" id="stat-incidents" style="color:var(--sienna-dk)">—</div><div class="stat-sub" id="stat-inc-sub">Loading...</div></div>
+        <div class="stat-card clickable-card" onclick="nav('notes',null);showPage('notes')" title="View shift notes"><div class="stat-stripe" style="background:var(--green)"></div><div class="stat-lbl">Shift notes</div><div class="stat-val" id="stat-notes" style="color:var(--green)">—</div><div class="stat-sub">Logged today</div></div>
       </div>
       <div class="twocol">
         <div class="card">
@@ -260,9 +264,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--warm-100);color:var(--tex
       <div class="card">
         <div class="card-head"><span class="card-title">Medication snapshot — today</span><span class="badge badge-blue" id="med-snap-badge">—</span></div>
         <div class="med-snap">
-          <div class="ms-cell"><div class="ms-val" id="ms-given" style="color:var(--green)">—</div><div class="ms-lbl">Given</div></div>
-          <div class="ms-cell"><div class="ms-val" id="ms-upcoming" style="color:var(--amber)">—</div><div class="ms-lbl">Upcoming</div></div>
-          <div class="ms-cell"><div class="ms-val" id="ms-overdue" style="color:var(--sienna-dk)">—</div><div class="ms-lbl">Overdue</div></div>
+          <div class="ms-cell clickable-card" onclick="openMedDrilldown('Given')" title="View given medications"><div class="ms-val" id="ms-given" style="color:var(--green)">—</div><div class="ms-lbl">Given ›</div></div>
+          <div class="ms-cell clickable-card" onclick="openMedDrilldown('Upcoming')" title="View upcoming medications"><div class="ms-val" id="ms-upcoming" style="color:var(--amber)">—</div><div class="ms-lbl">Upcoming ›</div></div>
+          <div class="ms-cell clickable-card" onclick="openMedDrilldown('Overdue')" title="View overdue medications"><div class="ms-val" id="ms-overdue" style="color:var(--sienna-dk)">—</div><div class="ms-lbl">Overdue ›</div></div>
         </div>
       </div>
     </div>
@@ -311,10 +315,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--warm-100);color:var(--tex
 
     <!-- INCIDENTS -->
     <div class="page" id="page-incidents">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-        <div style="font-size:13px;color:var(--text2)" id="incident-count">Loading incidents...</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-sm inc-filter active" onclick="filterIncidents('all',this)">All</button>
+          <button class="btn btn-sm inc-filter" onclick="filterIncidents('Open',this)">Open</button>
+          <button class="btn btn-sm inc-filter" onclick="filterIncidents('Follow-up',this)">Follow-up</button>
+          <button class="btn btn-sm inc-filter" onclick="filterIncidents('Resolved',this)">Resolved</button>
+          <button class="btn btn-sm inc-filter" onclick="filterIncidents('Closed',this)">Closed</button>
+        </div>
         <button class="btn btn-danger btn-sm" onclick="openModal('incident-modal')">+ Report incident</button>
       </div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px" id="incident-count">Loading incidents...</div>
       <div class="card">
         <div id="incidents-list"><div class="loading"><div class="spinner"></div>Loading...</div></div>
       </div>
@@ -440,6 +451,55 @@ body{font-family:'DM Sans',sans-serif;background:var(--warm-100);color:var(--tex
     <div style="display:flex;gap:10px">
       <button class="btn btn-primary" onclick="saveNote()">Save note</button>
       <button class="btn" onclick="closeModal('note-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- MED DRILLDOWN MODAL -->
+<div class="modal-bg" id="med-drilldown-modal" style="display:none" onclick="if(event.target===this)closeModal('med-drilldown-modal')">
+  <div class="modal" style="max-width:580px;width:95%">
+    <div class="modal-title">
+      <span id="med-drill-title">Medications</span>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('med-drilldown-modal')">✕</button>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="btn btn-sm med-drill-tab" onclick="switchMedDrillTab('all',this)">All</button>
+      <button class="btn btn-sm med-drill-tab" onclick="switchMedDrillTab('Given',this)">Given</button>
+      <button class="btn btn-sm med-drill-tab" onclick="switchMedDrillTab('Upcoming',this)">Upcoming</button>
+      <button class="btn btn-sm med-drill-tab" onclick="switchMedDrillTab('Overdue',this)">Overdue</button>
+    </div>
+    <div style="max-height:420px;overflow-y:auto" id="med-drill-list"></div>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:12px;color:var(--text3)" id="med-drill-count"></span>
+      <button class="btn btn-sm" onclick="closeModal('med-drilldown-modal');nav('medications',null);showPage('medications')">Open full medications page →</button>
+    </div>
+  </div>
+</div>
+
+<!-- INCIDENT ACTION MODAL -->
+<div class="modal-bg" id="inc-action-modal" style="display:none" onclick="if(event.target===this)closeModal('inc-action-modal')">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="inc-action-title">Update incident</span>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('inc-action-modal')">✕</button>
+    </div>
+    <input type="hidden" id="inc-action-id" />
+    <div style="background:var(--warm-100);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--text2)" id="inc-action-summary"></div>
+    <label class="flbl">Update status</label>
+    <div class="tag-row" style="margin-bottom:14px">
+      <div class="tag" onclick="selTag(this,'r','inc-new-status','Open')">Open</div>
+      <div class="tag sel-b" onclick="selTag(this,'b','inc-new-status','Follow-up')">Follow-up</div>
+      <div class="tag sel-g" onclick="selTag(this,'g','inc-new-status','Resolved')">Resolved</div>
+      <div class="tag sel-a" onclick="selTag(this,'a','inc-new-status','Closed')">Closed</div>
+    </div>
+    <input type="hidden" id="inc-new-status" value="Follow-up" />
+    <label class="flbl">Follow-up / resolution notes</label>
+    <textarea class="finput" id="inc-action-note" rows="4" placeholder="Describe actions taken, follow-up required, outcome..."></textarea>
+    <label class="flbl">Staff name</label>
+    <input class="finput" id="inc-action-staff" placeholder="Your name" />
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn btn-primary" onclick="saveIncidentAction()">Save update</button>
+      <button class="btn" onclick="closeModal('inc-action-modal')">Cancel</button>
     </div>
   </div>
 </div>
@@ -627,6 +687,20 @@ async function insertData(table, obj) {
   }
 }
 
+async function updateData(table, id, obj) {
+  try {
+    await sbFetch(table + '?id=eq.' + id, {
+      method: 'PATCH',
+      body: JSON.stringify(obj),
+      prefer: 'return=minimal'
+    });
+    return true;
+  } catch(e) {
+    toast('Update failed: ' + e.message, true);
+    return false;
+  }
+}
+
 // ── DASHBOARD ──
 async function loadDashboard() {
   const [residents, incidents, meds, notes] = await Promise.all([
@@ -674,6 +748,84 @@ async function loadDashboard() {
         <div><div class="ititle">${i.type} — Room ${i.room_number}, ${i.resident_name}</div><div class="imeta">${timeAgo(i.created_at)} &middot; ${i.severity} &middot; ${i.reported_by}</div></div>
       </div>`).join('');
   }
+}
+
+// ── MED DRILLDOWN ──
+let _drillMeds = [];
+let _drillFilter = 'all';
+
+async function openMedDrilldown(filter) {
+  _drillMeds = await getData('medications');
+  _drillFilter = filter;
+  const titles = { all: 'All Medications', Given: 'Medications Given', Upcoming: 'Medications Due Soon', Overdue: 'Overdue Medications' };
+  document.getElementById('med-drill-title').textContent = titles[filter] || 'Medications';
+  // Activate correct tab
+  document.querySelectorAll('.med-drill-tab').forEach(b => {
+    b.classList.remove('active');
+    const tabFilter = b.textContent.trim() === 'All' ? 'all' : b.textContent.trim();
+    if (tabFilter === filter) b.classList.add('active');
+  });
+  renderMedDrillList();
+  openModal('med-drilldown-modal');
+}
+
+function switchMedDrillTab(filter, btn) {
+  _drillFilter = filter;
+  document.querySelectorAll('.med-drill-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMedDrillList();
+}
+
+function renderMedDrillList() {
+  const list = _drillFilter === 'all' ? _drillMeds : _drillMeds.filter(m => m.status === _drillFilter);
+  document.getElementById('med-drill-count').textContent = `${list.length} medication${list.length !== 1 ? 's' : ''}`;
+
+  if (!list.length) {
+    document.getElementById('med-drill-list').innerHTML = '<div style="text-align:center;padding:28px;color:var(--text3);font-size:13px">No medications in this category.</div>';
+    return;
+  }
+
+  // Group by resident
+  const byResident = {};
+  list.forEach(m => {
+    const key = m.resident_name + '|' + m.room_number;
+    if (!byResident[key]) byResident[key] = { name: m.resident_name, room: m.room_number, meds: [] };
+    byResident[key].meds.push(m);
+  });
+
+  const statusColor = s => s === 'Given' ? 'var(--green)' : s === 'Overdue' ? 'var(--sienna-dk)' : '#d97706';
+  const statusBg = s => s === 'Given' ? '#e6f4ea' : s === 'Overdue' ? '#fde8e4' : '#fef3c7';
+  const statusFg = s => s === 'Given' ? '#1a7f37' : s === 'Overdue' ? '#a32d2d' : '#92400e';
+
+  document.getElementById('med-drill-list').innerHTML = Object.values(byResident)
+    .sort((a, b) => {
+      // Sort: Overdue first, then Upcoming, then Given
+      const priority = m => m.status === 'Overdue' ? 0 : m.status === 'Upcoming' ? 1 : 2;
+      const aP = Math.min(...a.meds.map(priority));
+      const bP = Math.min(...b.meds.map(priority));
+      return aP - bP || a.room - b.room;
+    })
+    .map(r => `
+      <div style="padding:12px 14px;border-bottom:1px solid var(--border);last-child:border-none">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <div style="width:30px;height:30px;border-radius:50%;background:var(--sienna-lt);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--sienna-dk);flex-shrink:0">
+            ${r.name.split(' ').map(n=>n[0]).join('').slice(0,2)}
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--text)">${r.name}</div>
+            <div style="font-size:11px;color:var(--text3)">Room ${r.room}</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;padding-left:38px">
+          ${r.meds.map(m => `
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+              <div style="font-size:12px;color:var(--text2)">${m.name}${m.time_due ? ' <span style="color:var(--text3)">· '+m.time_due+'</span>' : ''}${m.frequency ? ' <span style="color:var(--text3)">· '+m.frequency+'</span>' : ''}</div>
+              <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;white-space:nowrap;background:${statusBg(m.status)};color:${statusFg(m.status)}">${m.status}</span>
+            </div>
+            ${m.notes ? `<div style="font-size:11px;color:var(--text3);padding-top:1px">${m.notes.slice(0,90)}${m.notes.length>90?'…':''}</div>` : ''}
+          `).join('')}
+        </div>
+      </div>`).join('');
 }
 
 // ── RESIDENTS ──
@@ -751,21 +903,115 @@ async function saveMedication() {
 }
 
 // ── INCIDENTS ──
+let _allIncidents = [];
+let _incidentFilter = 'all';
+
+function incidentStatusColor(s) {
+  if (s === 'Resolved') return 'var(--green)';
+  if (s === 'Closed')   return 'var(--text3)';
+  if (s === 'Follow-up') return '#d97706';
+  return 'var(--sienna-dk)';
+}
+function incidentStatusBg(s) {
+  if (s === 'Resolved')  return 'background:#e6f4ea;color:#1a7f37';
+  if (s === 'Closed')    return 'background:#f0f0f0;color:#666';
+  if (s === 'Follow-up') return 'background:#fef3c7;color:#92400e';
+  return 'background:#fde8e4;color:#a32d2d';
+}
+
 async function loadIncidents() {
-  const incidents = await getData('incidents');
-  const open = incidents.filter(i => i.status !== 'Resolved');
-  document.getElementById('incident-count').textContent = `${incidents.length} incident${incidents.length!==1?'s':''} logged &middot; ${open.length} open`;
+  _allIncidents = await getData('incidents');
+  renderIncidents();
+}
+
+function filterIncidents(f, btn) {
+  _incidentFilter = f;
+  document.querySelectorAll('.inc-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderIncidents();
+}
+
+function renderIncidents() {
+  const list = _incidentFilter === 'all' ? _allIncidents : _allIncidents.filter(i => i.status === _incidentFilter);
+  const open = _allIncidents.filter(i => i.status === 'Open' || i.status === 'Follow-up').length;
+  document.getElementById('incident-count').textContent =
+    `${_allIncidents.length} total &middot; ${open} requiring action &middot; showing ${list.length}`;
   const el = document.getElementById('incidents-list');
-  if (!incidents.length) { el.innerHTML = '<div class="empty-state"><p>No incidents logged. Use the button above to report one.</p></div>'; return; }
-  el.innerHTML = incidents.map(i => `
-    <div class="irow">
+  if (!list.length) {
+    el.innerHTML = '<div class="empty-state"><p>No incidents match this filter.</p></div>';
+    return;
+  }
+  el.innerHTML = list.map(i => `
+    <div class="irow" id="irow-${i.id}">
       <div class="idot ${severityDot(i.severity)}"></div>
-      <div style="flex:1">
-        <div class="ititle">${i.type} — Room ${i.room_number}, ${i.resident_name}</div>
-        <div class="imeta">${i.description?.slice(0,80)}${i.description?.length>80?'…':''}</div>
-        <div class="imeta" style="margin-top:3px">${timeAgo(i.created_at)} &middot; ${i.severity} &middot; ${i.reported_by} &middot; <span style="color:${i.status==='Resolved'?'var(--green)':'var(--sienna-dk)'}">${i.status||'Open'}</span></div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+          <div class="ititle">${i.type} — Room ${i.room_number} &middot; ${i.resident_name}</div>
+          <span style="font-size:11px;font-weight:600;padding:2px 9px;border-radius:99px;white-space:nowrap;${incidentStatusBg(i.status)}">${i.status || 'Open'}</span>
+        </div>
+        <div class="imeta" style="margin-top:4px;line-height:1.5">${i.description || '—'}</div>
+        ${i.followup_note ? `<div style="margin-top:6px;padding:8px 10px;background:var(--warm-100);border-radius:6px;font-size:11px;color:var(--text2);line-height:1.5"><strong>Update:</strong> ${i.followup_note}</div>` : ''}
+        <div class="imeta" style="margin-top:6px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <span>${timeAgo(i.created_at)}</span>
+          <span>${i.severity}</span>
+          <span>Reported by ${i.reported_by}</span>
+          ${i.updated_by ? `<span>Updated by ${i.updated_by}</span>` : ''}
+        </div>
+        <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
+          <button class="btn btn-sm" style="font-size:11px" onclick="openIncidentAction(${i.id})">✏ Update / add note</button>
+          ${i.status !== 'Follow-up' ? `<button class="btn btn-sm" style="font-size:11px;background:#fef3c7;border-color:#f59e0b;color:#92400e" onclick="quickStatus(${i.id},'Follow-up')">↩ Follow-up</button>` : ''}
+          ${i.status !== 'Resolved'  ? `<button class="btn btn-sm" style="font-size:11px;background:#e6f4ea;border-color:#4caf50;color:#1a7f37" onclick="quickStatus(${i.id},'Resolved')">✓ Resolve</button>` : ''}
+          ${i.status !== 'Closed'    ? `<button class="btn btn-sm" style="font-size:11px;background:#f0f0f0;border-color:#ccc;color:#555" onclick="quickStatus(${i.id},'Closed')">✕ Close</button>` : ''}
+        </div>
       </div>
     </div>`).join('');
+}
+
+function openIncidentAction(id) {
+  const i = _allIncidents.find(x => x.id === id);
+  if (!i) return;
+  document.getElementById('inc-action-id').value = id;
+  document.getElementById('inc-action-title').textContent = `Update: ${i.type} — Room ${i.room_number}`;
+  document.getElementById('inc-action-summary').textContent = `${i.resident_name} · ${i.description?.slice(0,120)}${i.description?.length>120?'…':''}`;
+  document.getElementById('inc-action-note').value = '';
+  document.getElementById('inc-action-staff').value = '';
+  // Pre-select current status tag
+  const statusVal = i.status || 'Open';
+  document.getElementById('inc-new-status').value = statusVal;
+  document.querySelectorAll('#inc-action-modal .tag').forEach(t => {
+    t.classList.remove('active');
+    if (t.textContent.trim() === statusVal) t.classList.add('active');
+  });
+  openModal('inc-action-modal');
+}
+
+async function quickStatus(id, newStatus) {
+  const ok = await updateData('incidents', id, { status: newStatus });
+  if (ok) {
+    const inc = _allIncidents.find(x => x.id === id);
+    if (inc) inc.status = newStatus;
+    renderIncidents();
+    loadDashboard();
+    toast(`Incident marked as ${newStatus}`);
+  }
+}
+
+async function saveIncidentAction() {
+  const id = parseInt(document.getElementById('inc-action-id').value);
+  const note = document.getElementById('inc-action-note').value.trim();
+  const staff = document.getElementById('inc-action-staff').value.trim();
+  const status = document.getElementById('inc-new-status').value;
+  if (!staff) { toast('Please enter your name', true); return; }
+  const payload = { status };
+  if (note) payload.followup_note = note;
+  if (staff) payload.updated_by = staff;
+  const ok = await updateData('incidents', id, payload);
+  if (ok) {
+    toast('Incident updated');
+    closeModal('inc-action-modal');
+    await loadIncidents();
+    loadDashboard();
+  }
 }
 
 async function saveIncident() {
