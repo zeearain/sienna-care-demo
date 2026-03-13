@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Sienna Senior Living — Care Management</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 :root {
   --sienna:#E8391D; --sienna-dk:#C42E14; --sienna-lt:#FDF0ED; --sienna-mid:#F5C4B8;
@@ -162,7 +162,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--warm-100);color:var(--tex
 .empty-state{text-align:center;padding:40px 20px;color:var(--text3)}
 .empty-state p{font-size:13px;margin-top:6px}
 
-.scrollbar::-webkit-scrollbar{width:4px}
+.floor-btn.active{background:var(--sienna-lt);color:var(--sienna-dk);border-color:var(--sienna-mid);font-weight:500}
+.floor-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:7px;margin-top:4px}
 .scrollbar::-webkit-scrollbar-thumb{background:var(--warm-200);border-radius:2px}
 
 /* CONFIG BANNER */
@@ -182,7 +183,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--warm-100);color:var(--tex
   </div>
   <div class="facility-badge">
     <div class="facility-name">Fort Saskatchewan Care</div>
-    <div class="facility-meta">129 rooms &middot; Care Management</div>
+    <div class="facility-meta">126 rooms &middot; Care Management</div>
   </div>
   <div class="ns">Overview</div>
   <div class="ni active" onclick="nav('dashboard',this)">
@@ -233,9 +234,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--warm-100);color:var(--tex
   <div class="content scrollbar">
 
     <!-- CONFIG BANNER (shown until Supabase is configured) -->
-    <div class="config-banner" id="config-banner">
+    <div class="config-banner" id="config-banner" style="display:none">
       <strong>⚙️ Setup required — connect your database</strong>
-      Replace <code>https://gmyveqgyebhwtjgripko/supabase.co</code> and <code>sb_publishable_qWmNQC88bOpXOsg2dl1-9w_YjFJu0cp</code> at the top of the &lt;script&gt; section in this file with your Supabase project credentials. See the README for step-by-step instructions.
+      Replace <code>YOUR_SUPABASE_URL</code> and <code>YOUR_SUPABASE_ANON_KEY</code> at the top of the &lt;script&gt; section in this file with your Supabase project credentials. See the README for step-by-step instructions.
     </div>
 
     <!-- DASHBOARD -->
@@ -268,13 +269,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--warm-100);color:var(--tex
 
     <!-- ROOM MAP -->
     <div class="page" id="page-rooms">
-      <div class="legend">
-        <div class="leg-item"><div class="leg-dot" style="background:var(--sienna-mid)"></div>Occupied</div>
-        <div class="leg-item"><div class="leg-dot" style="background:#F7C1C1"></div>Alert / incident</div>
-        <div class="leg-item"><div class="leg-dot" style="background:var(--warm-200)"></div>Vacant</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
+        <div class="legend" style="margin:0">
+          <div class="leg-item"><div class="leg-dot" style="background:var(--sienna-mid)"></div>Occupied</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#F7C1C1"></div>Alert</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--warm-200)"></div>Vacant</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-sm floor-btn active" onclick="filterFloor(0,this)">All floors</button>
+          <button class="btn btn-sm floor-btn" onclick="filterFloor(1,this)">Floor 1</button>
+          <button class="btn btn-sm floor-btn" onclick="filterFloor(2,this)">Floor 2</button>
+          <button class="btn btn-sm floor-btn" onclick="filterFloor(3,this)">Floor 3</button>
+        </div>
       </div>
-      <div class="room-grid" id="rgrid"></div>
-      <div class="card" style="max-width:340px" id="room-detail" style="display:none">
+      <div id="floor-grids"></div>
+      <div class="card" style="max-width:340px;margin-top:14px" id="room-detail">
         <div class="card-head"><span class="card-title" id="room-detail-title">Select a room</span></div>
         <div style="padding:13px 18px" id="room-detail-body"><div style="font-size:12px;color:var(--text3)">Click any occupied room to view resident details.</div></div>
       </div>
@@ -337,8 +346,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--warm-100);color:var(--tex
       <div><label class="flbl">Last name</label><input class="finput" id="r-last" placeholder="Last name" /></div>
     </div>
     <div class="f3">
-      <div><label class="flbl">Room number</label><input class="finput" id="r-room" type="number" placeholder="e.g. 14" min="1" max="129" /></div>
-      <div><label class="flbl">Wing</label><select class="finput" id="r-wing"><option value="">Select...</option><option>A</option><option>B</option><option>C</option><option>D</option></select></div>
+      <div><label class="flbl">Room number</label><input class="finput" id="r-room" type="number" placeholder="e.g. 101" min="1" max="126" /></div>
+      <div><label class="flbl">Floor</label><select class="finput" id="r-wing"><option value="">Select...</option><option>1</option><option>2</option><option>3</option></select></div>
       <div><label class="flbl">Date of birth</label><input class="finput" id="r-dob" type="date" /></div>
     </div>
     <label class="flbl">Status</label>
@@ -367,7 +376,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--warm-100);color:var(--tex
       <div><label class="flbl">Resident name</label><input class="finput" id="m-resident" placeholder="Resident full name" /></div>
     </div>
     <div class="f3">
-      <div><label class="flbl">Room number</label><input class="finput" id="m-room" type="number" placeholder="Room #" /></div>
+      <div><label class="flbl">Room number</label><input class="finput" id="m-room" type="number" placeholder="e.g. 201" /></div>
       <div><label class="flbl">Frequency</label><select class="finput" id="m-freq"><option>1x daily</option><option>2x daily</option><option>3x daily</option><option>As needed</option><option>Weekly</option></select></div>
       <div><label class="flbl">Time due</label><input class="finput" id="m-time" type="time" /></div>
     </div>
@@ -402,7 +411,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--warm-100);color:var(--tex
     </div>
     <input type="hidden" id="i-type" value="Fall" />
     <div class="f2">
-      <div><label class="flbl">Room number</label><input class="finput" id="i-room" type="number" placeholder="Room #" /></div>
+      <div><label class="flbl">Room number</label><input class="finput" id="i-room" type="number" placeholder="e.g. 201" /></div>
       <div><label class="flbl">Severity</label><select class="finput" id="i-severity"><option>Critical</option><option>Moderate</option><option>Low</option></select></div>
     </div>
     <label class="flbl">Resident name</label>
@@ -443,16 +452,36 @@ body{font-family:'DM Sans',sans-serif;background:var(--warm-100);color:var(--tex
 //  CONFIGURATION — Replace with your Supabase credentials
 //  Get these from: supabase.com → your project → Settings → API
 // ═══════════════════════════════════════════════
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const SUPABASE_URL = 'https://gmyveqgyebhwtjgripko.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdteXZlcWd5ZWJod3RqZ3JpcGtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNTE3NTAsImV4cCI6MjA4ODkyNzc1MH0.wGypOh9UbY7QDRC6wid97531A4aVMZ7dLCECadXv1_M';
 // ═══════════════════════════════════════════════
 
-const configured = SUPABASE_URL !== 'YOUR_SUPABASE_URL';
-let db = null;
+const configured = true;
+document.addEventListener('DOMContentLoaded', () => {
+  const banner = document.getElementById('config-banner');
+  if (banner) banner.style.display = 'none';
+});
 
-if (configured) {
-  db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  document.getElementById('config-banner').style.display = 'none';
+// Direct REST API calls — no library needed
+async function sbFetch(path, options = {}) {
+  const url = `${SUPABASE_URL}/rest/v1/${path}`;
+  const res = await fetch(url, {
+    mode: 'cors',
+    ...options,
+    headers: {
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': options.prefer || 'return=representation',
+      ...(options.headers || {})
+    }
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : [];
 }
 
 // ── DATE ──
@@ -552,10 +581,10 @@ function shiftColor(shift) {
 
 // ── MOCK DATA (shown when not connected) ──
 const mockResidents = [
-  { id:1, first_name:'Margaret', last_name:'H.', room_number:14, wing:'A', status:'Fall risk', conditions:'Diabetes, mobility issues', created_at: new Date(Date.now()-3600000).toISOString() },
-  { id:2, first_name:'Robert', last_name:'K.', room_number:47, wing:'B', status:'Monitoring', conditions:'Hypertension', created_at: new Date(Date.now()-7200000).toISOString() },
-  { id:3, first_name:'Eleanor', last_name:'N.', room_number:82, wing:'C', status:'Stable', conditions:'Dementia', created_at: new Date(Date.now()-86400000).toISOString() },
-  { id:4, first_name:'James', last_name:'W.', room_number:101, wing:'D', status:'Stable', conditions:'Arthritis', created_at: new Date(Date.now()-172800000).toISOString() },
+  { id:1, first_name:'Margaret', last_name:'H.', room_number:14, wing:'1', status:'Fall risk', conditions:'Diabetes, mobility issues', created_at: new Date(Date.now()-3600000).toISOString() },
+  { id:2, first_name:'Robert', last_name:'K.', room_number:47, wing:'2', status:'Monitoring', conditions:'Hypertension', created_at: new Date(Date.now()-7200000).toISOString() },
+  { id:3, first_name:'Eleanor', last_name:'N.', room_number:82, wing:'3', status:'Stable', conditions:'Dementia', created_at: new Date(Date.now()-86400000).toISOString() },
+  { id:4, first_name:'James', last_name:'W.', room_number:101, wing:'3', status:'Stable', conditions:'Arthritis', created_at: new Date(Date.now()-172800000).toISOString() },
 ];
 const mockIncidents = [
   { id:1, type:'Fall', room_number:14, severity:'Critical', resident_name:'Margaret H.', description:'Resident found on floor beside bed. No apparent injury. Physio notified.', reported_by:'N. Patel', status:'Open', created_at: new Date(Date.now()-5*3600000).toISOString() },
@@ -575,23 +604,27 @@ const mockNotes = [
 
 // ── DATA LAYER ──
 async function getData(table, order='created_at') {
-  if (!configured) {
-    if (table==='residents') return mockResidents;
-    if (table==='incidents') return mockIncidents;
-    if (table==='medications') return mockMeds;
-    if (table==='shift_notes') return mockNotes;
+  try {
+    const data = await sbFetch(`${table}?order=${order}.desc&limit=200`);
+    return Array.isArray(data) ? data : [];
+  } catch(e) {
+    toast('Error loading ' + table + ': ' + e.message, true);
     return [];
   }
-  const { data, error } = await db.from(table).select('*').order(order, { ascending: false });
-  if (error) { toast('Error loading ' + table, true); return []; }
-  return data || [];
 }
 
 async function insertData(table, obj) {
-  if (!configured) { toast('Connect Supabase to save real data', true); return false; }
-  const { error } = await db.from(table).insert([obj]);
-  if (error) { toast('Save failed: ' + error.message, true); return false; }
-  return true;
+  try {
+    await sbFetch(table, {
+      method: 'POST',
+      body: JSON.stringify(obj),
+      prefer: 'return=minimal'
+    });
+    return true;
+  } catch(e) {
+    toast('Save failed: ' + e.message, true);
+    return false;
+  }
 }
 
 // ── DASHBOARD ──
@@ -607,7 +640,7 @@ async function loadDashboard() {
   const overdueMeds = meds.filter(m => m.status === 'Overdue');
 
   document.getElementById('stat-residents').textContent = residents.length;
-  document.getElementById('stat-rooms').textContent = `of 129 rooms occupied`;
+  document.getElementById('stat-rooms').textContent = `of 126 rooms occupied`;
   document.getElementById('stat-meds').textContent = meds.length;
   document.getElementById('stat-meds-sub').textContent = `${upcomingMeds.length} upcoming`;
   document.getElementById('stat-incidents').textContent = openInc.length;
@@ -626,7 +659,7 @@ async function loadDashboard() {
     rEl.innerHTML = residents.slice(0,5).map(r => `
       <div class="rrow">
         <div class="avatar ${avatarColor(r.first_name+r.last_name)}">${initials(r.first_name+' '+r.last_name)}</div>
-        <div class="rinfo"><div class="rname">${r.first_name} ${r.last_name}</div><div class="rmeta">Room ${r.room_number} &middot; Wing ${r.wing||'—'}</div></div>
+        <div class="rinfo"><div class="rname">${r.first_name} ${r.last_name}</div><div class="rmeta">Room ${r.room_number} &middot; Floor ${r.wing||'—'}</div></div>
         <span class="badge ${statusBadge(r.status)}">${r.status||'Stable'}</span>
       </div>`).join('') + (residents.length>5 ? `<div class="rrow" style="color:var(--text3);font-size:12px;cursor:default">+${residents.length-5} more residents</div>` : '');
   }
@@ -654,7 +687,7 @@ async function loadResidents() {
       <div class="avatar ${avatarColor(r.first_name+r.last_name)}">${initials(r.first_name+' '+r.last_name)}</div>
       <div class="rinfo">
         <div class="rname">${r.first_name} ${r.last_name}</div>
-        <div class="rmeta">Room ${r.room_number} &middot; Wing ${r.wing||'—'} &middot; ${r.conditions||'No conditions noted'}</div>
+        <div class="rmeta">Room ${r.room_number} &middot; Floor ${r.wing||'—'} &middot; ${r.conditions||'No conditions noted'}</div>
       </div>
       <span class="badge ${statusBadge(r.status)}">${r.status||'Stable'}</span>
     </div>`).join('');
@@ -788,25 +821,61 @@ async function saveNote() {
 }
 
 // ── ROOM GRID ──
-let occupiedRooms = [];
+let _roomResidents = [];
+let _roomIncidents = [];
+let _activeFloor = 0;
+
 async function buildRoomGrid() {
-  const residents = await getData('residents');
-  const incidents = await getData('incidents');
-  occupiedRooms = residents.map(r => r.room_number);
-  const alertRooms = incidents.filter(i=>i.status!=='Resolved').map(i=>i.room_number);
-  const grid = document.getElementById('rgrid');
-  grid.innerHTML = '';
-  for (let i = 1; i <= 129; i++) {
-    const cell = document.createElement('div');
-    const isAlert = alertRooms.includes(i);
-    const isOcc = occupiedRooms.includes(i);
-    cell.className = 'rcell ' + (isAlert ? 'rc-alert' : isOcc ? 'rc-occ' : 'rc-vacant');
-    cell.textContent = i;
-    if (isOcc || isAlert) {
-      cell.onclick = () => showRoomDetail(i, residents, incidents);
+  _roomResidents = await getData('residents');
+  _roomIncidents = await getData('incidents');
+  renderFloorGrids(_activeFloor);
+}
+
+function filterFloor(floor, btn) {
+  _activeFloor = floor;
+  document.querySelectorAll('.floor-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFloorGrids(floor);
+}
+
+function renderFloorGrids(floor) {
+  const container = document.getElementById('floor-grids');
+  container.innerHTML = '';
+  const occupiedRooms = _roomResidents.map(r => r.room_number);
+  const alertRooms = _roomIncidents.filter(i => i.status !== 'Resolved').map(i => i.room_number);
+
+  // Floors: 1 = rooms 101-142, 2 = rooms 201-242, 3 = rooms 301-342
+  const floors = [
+    { num: 1, start: 101, end: 142 },
+    { num: 2, start: 201, end: 242 },
+    { num: 3, start: 301, end: 342 },
+  ];
+
+  const floorsToShow = floor === 0 ? floors : floors.filter(f => f.num === floor);
+
+  floorsToShow.forEach(f => {
+    const label = document.createElement('div');
+    label.className = 'floor-label';
+    label.textContent = `Floor ${f.num} — Rooms ${f.start}–${f.end}`;
+    container.appendChild(label);
+
+    const grid = document.createElement('div');
+    grid.className = 'room-grid';
+    grid.style.gridTemplateColumns = 'repeat(14, 1fr)';
+
+    for (let i = f.start; i <= f.end; i++) {
+      const cell = document.createElement('div');
+      const isAlert = alertRooms.includes(i);
+      const isOcc = occupiedRooms.includes(i);
+      cell.className = 'rcell ' + (isAlert ? 'rc-alert' : isOcc ? 'rc-occ' : 'rc-vacant');
+      cell.textContent = i;
+      if (isOcc || isAlert) {
+        cell.onclick = () => showRoomDetail(i, _roomResidents, _roomIncidents);
+      }
+      grid.appendChild(cell);
     }
-    grid.appendChild(cell);
-  }
+    container.appendChild(grid);
+  });
 }
 
 function showRoomDetail(room, residents, incidents) {
@@ -817,7 +886,7 @@ function showRoomDetail(room, residents, incidents) {
   if (r) {
     title.textContent = `Room ${room} — ${r.first_name} ${r.last_name}`;
     body.innerHTML = `
-      <div style="font-size:12px;color:var(--text3);margin-bottom:9px">Wing ${r.wing||'—'} &middot; Admitted ${r.created_at?.split('T')[0]||'—'}</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:9px">Floor ${r.wing||'—'} &middot; Admitted ${r.created_at?.split('T')[0]||'—'}</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
         <span class="badge ${statusBadge(r.status)}">${r.status}</span>
         ${inc.length ? `<span class="badge badge-red">${inc.length} open incident${inc.length>1?'s':''}</span>` : ''}
