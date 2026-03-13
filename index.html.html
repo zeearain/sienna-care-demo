@@ -5,873 +5,829 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Sienna Senior Living — Care Management</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
-  --sienna: #E8391D;
-  --sienna-dk: #C42E14;
-  --sienna-lt: #FDF0ED;
-  --sienna-mid: #F5C4B8;
-  --warm-white: #FAFAF8;
-  --warm-100: #F4F3F0;
-  --warm-200: #E8E6E1;
-  --warm-400: #B0ADA6;
-  --warm-600: #6B6860;
-  --warm-800: #2C2B28;
-  --text: #1C1B18;
-  --text2: #6B6860;
-  --text3: #A8A5A0;
-  --border: #E8E6E1;
-  --blue: #2563EB;
-  --blue-lt: #EFF6FF;
-  --green: #16A34A;
-  --green-lt: #F0FDF4;
-  --amber: #D97706;
-  --amber-lt: #FFFBEB;
-  --radius: 10px;
-  --radius-lg: 14px;
+  --sienna:#E8391D; --sienna-dk:#C42E14; --sienna-lt:#FDF0ED; --sienna-mid:#F5C4B8;
+  --warm-100:#F4F3F0; --warm-200:#E8E6E1; --warm-400:#B0ADA6; --warm-600:#6B6860; --warm-800:#2C2B28;
+  --text:#1C1B18; --text2:#6B6860; --text3:#A8A5A0; --border:#E8E6E1;
+  --blue:#2563EB; --blue-lt:#EFF6FF; --green:#16A34A; --green-lt:#F0FDF4;
+  --amber:#D97706; --amber-lt:#FFFBEB; --radius:10px; --radius-lg:14px;
 }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--warm-100);color:var(--text);height:100vh;display:flex;overflow:hidden}
+.app{display:flex;width:100%;height:100vh;overflow:hidden}
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+/* SIDEBAR */
+.sidebar{width:220px;background:var(--warm-800);display:flex;flex-direction:column;flex-shrink:0}
+.brand{padding:22px 20px 18px;border-bottom:1px solid rgba(255,255,255,0.08)}
+.brand-name{font-family:'Playfair Display',serif;font-style:italic;font-size:26px;color:var(--sienna);letter-spacing:-0.5px;line-height:1}
+.brand-tag{font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:1.2px;text-transform:uppercase;margin-top:3px}
+.facility-badge{margin:14px 20px 0;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 12px}
+.facility-name{font-size:12px;font-weight:500;color:rgba(255,255,255,0.7)}
+.facility-meta{font-size:10px;color:rgba(255,255,255,0.3);margin-top:2px}
+.ns{padding:18px 20px 4px;font-size:9px;font-weight:600;color:rgba(255,255,255,0.22);text-transform:uppercase;letter-spacing:1px}
+.ni{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:13px;color:rgba(255,255,255,0.45);cursor:pointer;border-left:3px solid transparent;transition:all 0.15s}
+.ni:hover{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.8)}
+.ni.active{background:rgba(232,57,29,0.14);color:#F5C4B8;border-left-color:var(--sienna);font-weight:500}
+.ni svg{width:16px;height:16px;flex-shrink:0;opacity:0.6}
+.ni.active svg{opacity:1}
+.sidebar-foot{margin-top:auto;padding:14px 20px;border-top:1px solid rgba(255,255,255,0.07)}
+.shift-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:4px 10px;font-size:11px;color:rgba(255,255,255,0.45)}
+.shift-dot{width:6px;height:6px;border-radius:50%;background:#22C55E}
 
-body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--warm-100);
-  color: var(--text);
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;background:var(--warm-100)}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 26px;display:flex;align-items:center;justify-content:space-between;height:58px;flex-shrink:0}
+.tb-title{font-size:17px;font-weight:600;color:var(--text)}
+.tb-date{font-size:11px;color:var(--text3);margin-top:2px}
+.tb-actions{display:flex;gap:10px}
+.btn{padding:7px 15px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--text);font-family:'DM Sans',sans-serif;transition:all 0.12s}
+.btn:hover{background:var(--warm-100)}
+.btn-danger{background:var(--sienna-lt);color:var(--sienna-dk);border-color:var(--sienna-mid)}
+.btn-danger:hover{background:var(--sienna-mid)}
+.btn-primary{background:var(--sienna);color:#fff;border-color:var(--sienna)}
+.btn-primary:hover{background:var(--sienna-dk)}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-ghost{background:transparent;border-color:transparent;color:var(--text3)}
+.btn-ghost:hover{background:var(--warm-100);color:var(--text)}
 
-/* APP SHELL */
-.app { display: flex; height: 100vh; overflow: hidden; }
+.content{flex:1;overflow-y:auto;padding:22px 26px}
+.page{display:none} .page.active{display:block;animation:fadeIn 0.18s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 
-/* ── SIDEBAR ── */
-.sidebar {
-  width: 220px;
-  background: var(--warm-800);
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
-  position: relative;
-}
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.stat-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;position:relative;overflow:hidden}
+.stat-stripe{position:absolute;top:0;left:0;width:100%;height:3px}
+.stat-lbl{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:7px}
+.stat-val{font-size:28px;font-weight:600;line-height:1}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:4px}
 
-.sidebar::after {
-  content: '';
-  position: absolute;
-  right: 0; top: 0; bottom: 0;
-  width: 1px;
-  background: rgba(255,255,255,0.07);
-}
-
-.brand {
-  padding: 24px 20px 20px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-}
-
-.brand-name {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-size: 26px;
-  color: var(--sienna);
-  letter-spacing: -0.5px;
-  line-height: 1;
-}
-
-.brand-tag {
-  font-size: 10px;
-  color: rgba(255,255,255,0.35);
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  margin-top: 3px;
-}
-
-.facility-badge {
-  margin: 14px 20px 0;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 8px;
-  padding: 10px 12px;
-}
-
-.facility-name { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.75); }
-.facility-meta { font-size: 10px; color: rgba(255,255,255,0.35); margin-top: 2px; }
-
-.nav-section {
-  padding: 20px 20px 5px;
-  font-size: 9px;
-  font-weight: 600;
-  color: rgba(255,255,255,0.25);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 20px;
-  font-size: 13px;
-  font-weight: 400;
-  color: rgba(255,255,255,0.5);
-  cursor: pointer;
-  border-left: 3px solid transparent;
-  transition: all 0.15s ease;
-  margin: 1px 0;
-}
-
-.nav-item:hover {
-  background: rgba(255,255,255,0.05);
-  color: rgba(255,255,255,0.85);
-}
-
-.nav-item.active {
-  background: rgba(232,57,29,0.15);
-  color: #F5C4B8;
-  border-left-color: var(--sienna);
-  font-weight: 500;
-}
-
-.nav-icon {
-  width: 18px;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.6;
-}
-
-.nav-item.active .nav-icon { opacity: 1; }
-
-.sidebar-foot {
-  margin-top: auto;
-  padding: 16px 20px;
-  border-top: 1px solid rgba(255,255,255,0.07);
-}
-
-.shift-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 20px;
-  padding: 4px 10px;
-  font-size: 11px;
-  color: rgba(255,255,255,0.5);
-}
-
-.shift-dot { width: 6px; height: 6px; border-radius: 50%; background: #22C55E; }
-
-/* ── MAIN ── */
-.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; background: var(--warm-100); }
-
-/* TOPBAR */
-.topbar {
-  background: #fff;
-  border-bottom: 1px solid var(--border);
-  padding: 0 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 60px;
-  flex-shrink: 0;
-}
-
-.topbar-left { display: flex; align-items: baseline; gap: 10px; }
-.topbar-title { font-size: 18px; font-weight: 600; color: var(--text); }
-.topbar-date { font-size: 12px; color: var(--text3); }
-
-.topbar-actions { display: flex; gap: 10px; align-items: center; }
-
-.btn {
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  border: 1px solid var(--border);
-  background: #fff;
-  color: var(--text);
-  font-family: 'DM Sans', sans-serif;
-  transition: all 0.12s;
-}
-
-.btn:hover { background: var(--warm-100); }
-
-.btn-danger {
-  background: var(--sienna-lt);
-  color: var(--sienna-dk);
-  border-color: var(--sienna-mid);
-}
-.btn-danger:hover { background: var(--sienna-mid); }
-
-.btn-primary {
-  background: var(--sienna);
-  color: #fff;
-  border-color: var(--sienna);
-}
-.btn-primary:hover { background: var(--sienna-dk); }
-
-/* CONTENT */
-.content { flex: 1; overflow-y: auto; padding: 24px 28px; }
-
-/* PAGE SYSTEM */
-.page { display: none; }
-.page.active { display: block; }
-
-/* STATS ROW */
-.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 20px; }
-
-.stat-card {
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 18px 20px;
-  position: relative;
-  overflow: hidden;
-}
-
-.stat-stripe {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 3px;
-}
-
-.stat-lbl {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--text3);
-  text-transform: uppercase;
-  letter-spacing: 0.7px;
-  margin-bottom: 8px;
-}
-
-.stat-val { font-size: 30px; font-weight: 600; line-height: 1; color: var(--text); }
-.stat-sub { font-size: 11px; color: var(--text3); margin-top: 5px; }
-
-/* TWO COLUMN */
-.twocol { display: grid; grid-template-columns: 1.35fr 1fr; gap: 16px; margin-bottom: 16px; }
-
-/* CARD */
-.card {
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
-
-.card-head {
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.card-title { font-size: 13px; font-weight: 600; color: var(--text); }
+/* LAYOUT */
+.twocol{display:grid;grid-template-columns:1.35fr 1fr;gap:14px;margin-bottom:14px}
+.card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.card-head{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:13px;font-weight:600;color:var(--text)}
 
 /* BADGES */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 9px;
-  border-radius: 5px;
-  font-size: 11px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-.badge-red { background: var(--sienna-lt); color: var(--sienna-dk); }
-.badge-amber { background: var(--amber-lt); color: var(--amber); }
-.badge-green { background: var(--green-lt); color: var(--green); }
-.badge-blue { background: var(--blue-lt); color: var(--blue); }
-.badge-gray { background: var(--warm-100); color: var(--warm-600); }
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500;white-space:nowrap}
+.badge-red{background:var(--sienna-lt);color:var(--sienna-dk)}
+.badge-amber{background:var(--amber-lt);color:var(--amber)}
+.badge-green{background:var(--green-lt);color:var(--green)}
+.badge-blue{background:var(--blue-lt);color:var(--blue)}
+.badge-gray{background:var(--warm-100);color:var(--warm-600)}
 
-/* RESIDENT ROWS */
-.rrow {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 20px;
-  border-bottom: 1px solid var(--border);
-  cursor: pointer;
-  transition: background 0.1s;
-}
-.rrow:hover { background: var(--warm-100); }
-.rrow:last-child { border-bottom: none; }
+/* ROWS */
+.rrow{display:flex;align-items:center;gap:11px;padding:10px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s}
+.rrow:hover{background:var(--warm-100)}
+.rrow:last-child{border-bottom:none}
+.avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+.av-r{background:var(--sienna-lt);color:var(--sienna-dk)}
+.av-b{background:var(--blue-lt);color:var(--blue)}
+.av-g{background:var(--green-lt);color:var(--green)}
+.av-p{background:#EDE9FE;color:#6D28D9}
+.av-a{background:var(--amber-lt);color:var(--amber)}
+.rinfo{flex:1;min-width:0}
+.rname{font-size:13px;font-weight:500;color:var(--text)}
+.rmeta{font-size:11px;color:var(--text3);margin-top:1px}
 
-.avatar {
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 600;
-  flex-shrink: 0;
-}
-.av-red { background: var(--sienna-lt); color: var(--sienna-dk); }
-.av-blue { background: var(--blue-lt); color: var(--blue); }
-.av-green { background: var(--green-lt); color: var(--green); }
-.av-purple { background: #EDE9FE; color: #6D28D9; }
+.irow{display:flex;align-items:flex-start;gap:10px;padding:11px 18px;border-bottom:1px solid var(--border)}
+.irow:last-child{border-bottom:none}
+.idot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.dot-red{background:var(--sienna)} .dot-amber{background:var(--amber)} .dot-blue{background:var(--blue)} .dot-green{background:var(--green)}
+.ititle{font-size:12px;font-weight:500;color:var(--text)}
+.imeta{font-size:11px;color:var(--text3);margin-top:2px}
 
-.rinfo { flex: 1; min-width: 0; }
-.rname { font-size: 13px; font-weight: 500; color: var(--text); }
-.rmeta { font-size: 11px; color: var(--text3); margin-top: 1px; }
+/* MED */
+.med-snap{display:grid;grid-template-columns:repeat(3,1fr)}
+.ms-cell{padding:13px 18px;text-align:center;border-right:1px solid var(--border)}
+.ms-cell:last-child{border-right:none}
+.ms-val{font-size:22px;font-weight:600}
+.ms-lbl{font-size:11px;color:var(--text3);margin-top:3px}
+.med-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin-bottom:14px}
+.med-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:13px 15px}
+.med-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.med-res{font-size:11px;color:var(--text3);margin-bottom:8px}
+.prog{height:5px;background:var(--warm-200);border-radius:3px;margin:7px 0}
+.prog-fill{height:5px;border-radius:3px}
+.med-foot{display:flex;justify-content:space-between;align-items:center}
 
-/* INCIDENTS */
-.irow {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 12px 20px;
-  border-bottom: 1px solid var(--border);
-}
-.irow:last-child { border-bottom: none; }
-
-.idot {
-  width: 8px; height: 8px; border-radius: 50%;
-  margin-top: 4px; flex-shrink: 0;
-}
-.dot-red { background: var(--sienna); }
-.dot-amber { background: var(--amber); }
-.dot-blue { background: var(--blue); }
-.dot-green { background: var(--green); }
-
-.ititle { font-size: 13px; font-weight: 500; color: var(--text); }
-.imeta { font-size: 11px; color: var(--text3); margin-top: 2px; }
-
-/* MED SNAPSHOT */
-.med-snap {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  border-top: 1px solid var(--border);
-}
-.ms-cell {
-  padding: 14px 20px;
-  text-align: center;
-  border-right: 1px solid var(--border);
-}
-.ms-cell:last-child { border-right: none; }
-.ms-val { font-size: 24px; font-weight: 600; }
-.ms-lbl { font-size: 11px; color: var(--text3); margin-top: 3px; }
-
-/* MED CARDS */
-.med-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
-
-.med-card {
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 16px;
-}
-.med-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
-.med-res { font-size: 11px; color: var(--text3); margin-bottom: 10px; }
-.prog { height: 5px; background: var(--warm-200); border-radius: 3px; margin: 8px 0; }
-.prog-fill { height: 5px; border-radius: 3px; transition: width 0.5s; }
-.med-foot { display: flex; justify-content: space-between; align-items: center; }
-
-/* ROOM GRID */
-.room-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; margin-bottom: 16px; }
-.rcell {
-  aspect-ratio: 1;
-  border-radius: 7px;
-  border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 9px; font-weight: 500;
-  cursor: pointer;
-  transition: all 0.12s;
-}
-.rcell:hover { transform: scale(1.08); z-index: 1; position: relative; }
-.rc-occ { background: var(--sienna-lt); color: var(--sienna-dk); border-color: var(--sienna-mid); }
-.rc-alert { background: #FCEBEB; color: #A32D2D; border-color: #F7C1C1; }
-.rc-vacant { background: var(--warm-100); color: var(--text3); }
-
-/* LEGEND */
-.legend { display: flex; gap: 16px; margin-bottom: 14px; }
-.leg-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text2); }
-.leg-dot { width: 10px; height: 10px; border-radius: 3px; }
+/* ROOM */
+.room-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;margin-bottom:14px}
+.rcell{aspect-ratio:1;border-radius:6px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;cursor:pointer;transition:transform 0.1s}
+.rcell:hover{transform:scale(1.1)}
+.rc-occ{background:var(--sienna-lt);color:var(--sienna-dk);border-color:var(--sienna-mid)}
+.rc-alert{background:#FCEBEB;color:#A32D2D;border-color:#F7C1C1}
+.rc-vacant{background:var(--warm-100);color:var(--text3)}
+.legend{display:flex;gap:14px;margin-bottom:12px}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
+.leg-dot{width:10px;height:10px;border-radius:3px}
 
 /* FORM */
-.form-panel {
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 22px;
-  max-width: 560px;
-}
-.form-panel-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 18px; }
+.form-panel{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;max-width:580px;margin-bottom:16px}
+.form-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:16px}
+.flbl{font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px}
+.finput{width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:#fff;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.15s;margin-bottom:12px}
+.finput:focus{border-color:var(--sienna)}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.f3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.tag-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tag{padding:5px 11px;border-radius:6px;font-size:12px;cursor:pointer;border:1px solid var(--border);color:var(--text2);background:#fff;font-family:'DM Sans',sans-serif;transition:all 0.1s}
+.tag:hover{border-color:var(--sienna-mid);color:var(--sienna-dk)}
+.tag.sel-r{background:var(--sienna-lt);color:var(--sienna-dk);border-color:var(--sienna-mid)}
+.tag.sel-a{background:var(--amber-lt);color:var(--amber);border-color:#FDE68A}
+.tag.sel-b{background:var(--blue-lt);color:var(--blue);border-color:#BFDBFE}
+.tag.sel-g{background:var(--green-lt);color:var(--green);border-color:#BBF7D0}
 
-.flbl {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--text2);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  display: block;
-  margin-bottom: 5px;
-}
+/* NOTES */
+.nrow{display:flex;align-items:flex-start;gap:11px;padding:12px 18px;border-bottom:1px solid var(--border)}
+.nrow:last-child{border-bottom:none}
+.shift-pill{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;white-space:nowrap;flex-shrink:0}
 
-.finput {
-  width: 100%;
-  padding: 9px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 13px;
-  background: #fff;
-  color: var(--text);
-  font-family: 'DM Sans', sans-serif;
-  margin-bottom: 14px;
-  outline: none;
-  transition: border-color 0.15s;
-}
-.finput:focus { border-color: var(--sienna); }
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;display:flex;align-items:center;justify-content:center}
+.modal{background:#fff;border-radius:var(--radius-lg);padding:24px;width:520px;max-height:85vh;overflow-y:auto;border:1px solid var(--border)}
+.modal-title{font-size:15px;font-weight:600;color:var(--text);margin-bottom:18px;display:flex;align-items:center;justify-content:space-between}
 
-.f2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--warm-800);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;z-index:200;opacity:0;transition:opacity 0.3s;pointer-events:none}
+.toast.show{opacity:1}
 
-.tag-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
-.tag {
-  padding: 5px 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  cursor: pointer;
-  border: 1px solid var(--border);
-  color: var(--text2);
-  background: #fff;
-  font-family: 'DM Sans', sans-serif;
-  transition: all 0.1s;
-}
-.tag:hover { border-color: var(--sienna-mid); color: var(--sienna-dk); }
-.tag.sel-r { background: var(--sienna-lt); color: var(--sienna-dk); border-color: var(--sienna-mid); }
-.tag.sel-a { background: var(--amber-lt); color: var(--amber); border-color: #FDE68A; }
-.tag.sel-b { background: var(--blue-lt); color: var(--blue); border-color: #BFDBFE; }
+/* LOADING */
+.loading{display:flex;align-items:center;justify-content:center;padding:40px;color:var(--text3);font-size:13px;gap:8px}
+.spinner{width:16px;height:16px;border:2px solid var(--warm-200);border-top-color:var(--sienna);border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-/* SHIFT NOTE */
-.nrow {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 13px 20px;
-  border-bottom: 1px solid var(--border);
-}
-.nrow:last-child { border-bottom: none; }
-.shift-pill {
-  padding: 3px 9px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text3)}
+.empty-state p{font-size:13px;margin-top:6px}
 
-/* SCROLLBAR */
-.content::-webkit-scrollbar { width: 5px; }
-.content::-webkit-scrollbar-track { background: transparent; }
-.content::-webkit-scrollbar-thumb { background: var(--warm-200); border-radius: 3px; }
+.scrollbar::-webkit-scrollbar{width:4px}
+.scrollbar::-webkit-scrollbar-thumb{background:var(--warm-200);border-radius:2px}
 
-/* ANIMATIONS */
-@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-.page.active { animation: fadeIn 0.2s ease; }
+/* CONFIG BANNER */
+.config-banner{background:#FFFBEB;border:1px solid #FDE68A;border-radius:var(--radius);padding:14px 18px;margin-bottom:18px;font-size:13px;color:#92400E}
+.config-banner strong{display:block;font-size:13px;font-weight:600;margin-bottom:4px}
+.config-banner code{background:#FEF3C7;padding:1px 5px;border-radius:3px;font-size:12px;font-family:monospace}
 </style>
 </head>
 <body>
-
 <div class="app">
 
-  <!-- ── SIDEBAR ── -->
-  <div class="sidebar">
-    <div class="brand">
-      <div class="brand-name">Sienna</div>
-      <div class="brand-tag">Senior Living</div>
-    </div>
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="brand">
+    <div class="brand-name">Sienna</div>
+    <div class="brand-tag">Senior Living</div>
+  </div>
+  <div class="facility-badge">
+    <div class="facility-name">Fort Saskatchewan Care</div>
+    <div class="facility-meta">129 rooms &middot; Care Management</div>
+  </div>
+  <div class="ns">Overview</div>
+  <div class="ni active" onclick="nav('dashboard',this)">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+    Dashboard
+  </div>
+  <div class="ni" onclick="nav('rooms',this)">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="14" height="14" rx="2"/><path d="M1 8h14M8 1v14"/></svg>
+    Room map
+  </div>
+  <div class="ns">Care</div>
+  <div class="ni" onclick="nav('residents',this)">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 15c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+    Residents
+  </div>
+  <div class="ni" onclick="nav('medications',this)">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2h4v4l2 2-2 2v4H6v-4L4 8l2-2V2z"/><path d="M4 8h8"/></svg>
+    Medications
+  </div>
+  <div class="ni" onclick="nav('incidents',this)">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1L1 14h14L8 1z"/><path d="M8 6v4M8 11.5v1"/></svg>
+    Incidents
+  </div>
+  <div class="ns">Staff</div>
+  <div class="ni" onclick="nav('notes',this)">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 6h6M5 9h4"/></svg>
+    Shift notes
+  </div>
+  <div class="sidebar-foot">
+    <div class="shift-badge"><div class="shift-dot"></div> Day shift active</div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.22);margin-top:8px" id="today-date"></div>
+  </div>
+</div>
 
-    <div class="facility-badge">
-      <div class="facility-name">Fort Saskatchewan Care</div>
-      <div class="facility-meta">129 rooms &middot; Care Management System</div>
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="tb-title" id="ptitle">Dashboard</div>
+      <div class="tb-date" id="full-date"></div>
     </div>
-
-    <div class="nav-section">Overview</div>
-    <div class="nav-item active" onclick="nav('dashboard', this)">
-      <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="6" height="6" rx="1"/><rect x="10" y="2" width="6" height="6" rx="1"/><rect x="2" y="10" width="6" height="6" rx="1"/><rect x="10" y="10" width="6" height="6" rx="1"/></svg>
-      Dashboard
-    </div>
-    <div class="nav-item" onclick="nav('rooms', this)">
-      <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="14" height="14" rx="2"/><path d="M2 9h14M9 2v14"/></svg>
-      Room map
-    </div>
-
-    <div class="nav-section">Care</div>
-    <div class="nav-item" onclick="nav('residents', this)">
-      <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="6" r="3"/><path d="M3 16c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
-      Residents
-    </div>
-    <div class="nav-item" onclick="nav('medications', this)">
-      <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 3h4v4l2 2-2 2v4H7v-4L5 9l2-2V3z"/><path d="M5 9h8"/></svg>
-      Medications
-    </div>
-    <div class="nav-item" onclick="nav('incidents', this)">
-      <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 2L2 16h14L9 2z"/><path d="M9 8v4M9 13.5v.5"/></svg>
-      Incidents
-    </div>
-
-    <div class="nav-section">Staff</div>
-    <div class="nav-item" onclick="nav('notes', this)">
-      <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h10v9H4zM7 7h4M7 10h3"/><path d="M11 13l2 2"/></svg>
-      Shift notes
-    </div>
-
-    <div class="sidebar-foot">
-      <div class="shift-badge">
-        <div class="shift-dot"></div>
-        Day shift active
-      </div>
-      <div style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:8px">March 12, 2026</div>
+    <div class="tb-actions">
+      <button class="btn btn-danger" onclick="nav('incidents',null);showPage('incidents');openModal('incident-modal')">+ Report incident</button>
+      <button class="btn btn-primary" onclick="nav('residents',null);showPage('residents');openModal('resident-modal')">+ Add resident</button>
     </div>
   </div>
 
-  <!-- ── MAIN ── -->
-  <div class="main">
+  <div class="content scrollbar">
 
-    <!-- TOPBAR -->
-    <div class="topbar">
-      <div class="topbar-left">
-        <div class="topbar-title" id="ptitle">Dashboard</div>
-        <div class="topbar-date">Thursday, March 12, 2026</div>
+    <!-- CONFIG BANNER (shown until Supabase is configured) -->
+    <div class="config-banner" id="config-banner">
+      <strong>⚙️ Setup required — connect your database</strong>
+      Replace <code>https://gmyveqgyebhwtjgripko/supabase.co</code> and <code>sb_publishable_qWmNQC88bOpXOsg2dl1-9w_YjFJu0cp</code> at the top of the &lt;script&gt; section in this file with your Supabase project credentials. See the README for step-by-step instructions.
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats" id="dash-stats">
+        <div class="stat-card"><div class="stat-stripe" style="background:var(--sienna)"></div><div class="stat-lbl">Residents</div><div class="stat-val" id="stat-residents">—</div><div class="stat-sub" id="stat-rooms">Loading...</div></div>
+        <div class="stat-card"><div class="stat-stripe" style="background:var(--blue)"></div><div class="stat-lbl">Meds today</div><div class="stat-val" id="stat-meds" style="color:var(--blue)">—</div><div class="stat-sub" id="stat-meds-sub">Loading...</div></div>
+        <div class="stat-card"><div class="stat-stripe" style="background:var(--sienna)"></div><div class="stat-lbl">Open incidents</div><div class="stat-val" id="stat-incidents" style="color:var(--sienna-dk)">—</div><div class="stat-sub" id="stat-inc-sub">Loading...</div></div>
+        <div class="stat-card"><div class="stat-stripe" style="background:var(--green)"></div><div class="stat-lbl">Shift notes</div><div class="stat-val" id="stat-notes" style="color:var(--green)">—</div><div class="stat-sub">Logged today</div></div>
       </div>
-      <div class="topbar-actions">
-        <button class="btn btn-danger" onclick="nav('incidents',null); openInc()">
-          + Report incident
-        </button>
-        <button class="btn btn-primary" onclick="nav('residents',null)">
-          + Add resident
-        </button>
+      <div class="twocol">
+        <div class="card">
+          <div class="card-head"><span class="card-title">Recent residents</span><button class="btn btn-sm btn-ghost" onclick="nav('residents',null);showPage('residents')">View all</button></div>
+          <div id="dash-residents"><div class="loading"><div class="spinner"></div>Loading...</div></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">Recent incidents</span><span class="badge badge-red" id="dash-inc-badge">—</span></div>
+          <div id="dash-incidents"><div class="loading"><div class="spinner"></div>Loading...</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">Medication snapshot — today</span><span class="badge badge-blue" id="med-snap-badge">—</span></div>
+        <div class="med-snap">
+          <div class="ms-cell"><div class="ms-val" id="ms-given" style="color:var(--green)">—</div><div class="ms-lbl">Given</div></div>
+          <div class="ms-cell"><div class="ms-val" id="ms-upcoming" style="color:var(--amber)">—</div><div class="ms-lbl">Upcoming</div></div>
+          <div class="ms-cell"><div class="ms-val" id="ms-overdue" style="color:var(--sienna-dk)">—</div><div class="ms-lbl">Overdue</div></div>
+        </div>
       </div>
     </div>
 
-    <div class="content">
-
-      <!-- ── DASHBOARD ── -->
-      <div class="page active" id="page-dashboard">
-        <div class="stats">
-          <div class="stat-card">
-            <div class="stat-stripe" style="background:var(--sienna)"></div>
-            <div class="stat-lbl">Occupied rooms</div>
-            <div class="stat-val">112</div>
-            <div class="stat-sub">17 currently vacant</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-stripe" style="background:var(--blue)"></div>
-            <div class="stat-lbl">Meds due today</div>
-            <div class="stat-val" style="color:var(--blue)">34</div>
-            <div class="stat-sub">8 in next 60 min</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-stripe" style="background:var(--sienna)"></div>
-            <div class="stat-lbl">Open incidents</div>
-            <div class="stat-val" style="color:var(--sienna-dk)">3</div>
-            <div class="stat-sub">1 critical — fall</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-stripe" style="background:var(--green)"></div>
-            <div class="stat-lbl">Shift notes</div>
-            <div class="stat-val" style="color:var(--green)">7</div>
-            <div class="stat-sub">Logged today</div>
-          </div>
-        </div>
-
-        <div class="twocol">
-          <div class="card">
-            <div class="card-head">
-              <span class="card-title">Flagged residents</span>
-              <span class="badge badge-red">4 need attention</span>
-            </div>
-            <div class="rrow">
-              <div class="avatar av-red">MH</div>
-              <div class="rinfo"><div class="rname">Margaret H.</div><div class="rmeta">Room 14 &middot; Wing A</div></div>
-              <span class="badge badge-red">Fall risk</span>
-            </div>
-            <div class="rrow">
-              <div class="avatar av-blue">RK</div>
-              <div class="rinfo"><div class="rname">Robert K.</div><div class="rmeta">Room 47 &middot; Wing B</div></div>
-              <span class="badge badge-amber">Med overdue</span>
-            </div>
-            <div class="rrow">
-              <div class="avatar av-green">EN</div>
-              <div class="rinfo"><div class="rname">Eleanor N.</div><div class="rmeta">Room 82 &middot; Wing C</div></div>
-              <span class="badge badge-amber">Review today</span>
-            </div>
-            <div class="rrow">
-              <div class="avatar av-purple">JW</div>
-              <div class="rinfo"><div class="rname">James W.</div><div class="rmeta">Room 101 &middot; Wing D</div></div>
-              <span class="badge badge-green">Stable</span>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-head">
-              <span class="card-title">Recent incidents</span>
-              <span class="badge badge-red">3 open</span>
-            </div>
-            <div class="irow">
-              <div class="idot dot-red"></div>
-              <div><div class="ititle">Fall — Room 14, Margaret H.</div><div class="imeta">08:42 AM &middot; Critical &middot; N. Patel</div></div>
-            </div>
-            <div class="irow">
-              <div class="idot dot-amber"></div>
-              <div><div class="ititle">Medication missed — Room 47</div><div class="imeta">07:15 AM &middot; Moderate &middot; K. Singh</div></div>
-            </div>
-            <div class="irow">
-              <div class="idot dot-blue"></div>
-              <div><div class="ititle">Behavioural concern — Room 62</div><div class="imeta">Yesterday 9:30 PM &middot; Pending review</div></div>
-            </div>
-            <div class="irow" style="border:none">
-              <button class="btn btn-danger" style="width:100%" onclick="nav('incidents',null);openInc()">
-                + Report new incident
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-head">
-            <span class="card-title">Medication snapshot — today</span>
-            <span class="badge badge-blue">34 scheduled</span>
-          </div>
-          <div class="med-snap">
-            <div class="ms-cell"><div class="ms-val" style="color:var(--green)">21</div><div class="ms-lbl">Given</div></div>
-            <div class="ms-cell"><div class="ms-val" style="color:var(--amber)">8</div><div class="ms-lbl">Upcoming</div></div>
-            <div class="ms-cell"><div class="ms-val" style="color:var(--sienna-dk)">5</div><div class="ms-lbl">Overdue</div></div>
-          </div>
-        </div>
+    <!-- ROOM MAP -->
+    <div class="page" id="page-rooms">
+      <div class="legend">
+        <div class="leg-item"><div class="leg-dot" style="background:var(--sienna-mid)"></div>Occupied</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#F7C1C1"></div>Alert / incident</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--warm-200)"></div>Vacant</div>
       </div>
-
-      <!-- ── ROOM MAP ── -->
-      <div class="page" id="page-rooms">
-        <div class="legend">
-          <div class="leg-item"><div class="leg-dot" style="background:var(--sienna-mid)"></div>Occupied</div>
-          <div class="leg-item"><div class="leg-dot" style="background:#F7C1C1"></div>Alert</div>
-          <div class="leg-item"><div class="leg-dot" style="background:var(--warm-200)"></div>Vacant</div>
-        </div>
-        <div class="room-grid" id="rgrid"></div>
-        <div class="card" style="max-width:320px">
-          <div class="card-head"><span class="card-title">Room 14 — Margaret H.</span></div>
-          <div style="padding:14px 20px">
-            <div style="font-size:12px;color:var(--text3);margin-bottom:9px">Wing A &middot; Admitted Jan 2023</div>
-            <div style="display:flex;gap:6px;flex-wrap:wrap">
-              <span class="badge badge-red">Fall risk</span>
-              <span class="badge badge-amber">Diabetes</span>
-              <span class="badge badge-blue">Physio 3x/wk</span>
-            </div>
-          </div>
-        </div>
+      <div class="room-grid" id="rgrid"></div>
+      <div class="card" style="max-width:340px" id="room-detail" style="display:none">
+        <div class="card-head"><span class="card-title" id="room-detail-title">Select a room</span></div>
+        <div style="padding:13px 18px" id="room-detail-body"><div style="font-size:12px;color:var(--text3)">Click any occupied room to view resident details.</div></div>
       </div>
+    </div>
 
-      <!-- ── RESIDENTS ── -->
-      <div class="page" id="page-residents">
-        <div class="card">
-          <div class="card-head">
-            <span class="card-title">All residents (112 of 129)</span>
-            <span class="badge badge-gray">87% occupancy</span>
-          </div>
-          <div class="rrow"><div class="avatar av-red">MH</div><div class="rinfo"><div class="rname">Margaret H.</div><div class="rmeta">Room 14 &middot; DOB Mar 12, 1938 &middot; Wing A</div></div><span class="badge badge-red">Fall risk</span></div>
-          <div class="rrow"><div class="avatar av-blue">RK</div><div class="rinfo"><div class="rname">Robert K.</div><div class="rmeta">Room 47 &middot; DOB Jul 4, 1942 &middot; Wing B</div></div><span class="badge badge-amber">Med overdue</span></div>
-          <div class="rrow"><div class="avatar av-green">EN</div><div class="rinfo"><div class="rname">Eleanor N.</div><div class="rmeta">Room 82 &middot; DOB Sep 22, 1945 &middot; Wing C</div></div><span class="badge badge-green">Stable</span></div>
-          <div class="rrow"><div class="avatar av-purple">JW</div><div class="rinfo"><div class="rname">James W.</div><div class="rmeta">Room 101 &middot; DOB Feb 1, 1950 &middot; Wing D</div></div><span class="badge badge-green">Stable</span></div>
-          <div class="rrow" style="border:none;color:var(--text3);font-size:12px;cursor:default">+ 108 more residents&hellip;</div>
-        </div>
+    <!-- RESIDENTS -->
+    <div class="page" id="page-residents">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div style="font-size:13px;color:var(--text2)" id="resident-count">Loading residents...</div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('resident-modal')">+ Add resident</button>
       </div>
-
-      <!-- ── MEDICATIONS ── -->
-      <div class="page" id="page-medications">
-        <div class="med-grid">
-          <div class="med-card">
-            <div class="med-name">Metformin 500mg</div>
-            <div class="med-res">Robert K. &middot; Room 47</div>
-            <div class="prog"><div class="prog-fill" style="width:0%;background:var(--sienna)"></div></div>
-            <div class="med-foot"><span class="badge badge-red">Overdue 07:15</span><span style="font-size:11px;color:var(--text3)">2x daily</span></div>
-          </div>
-          <div class="med-card">
-            <div class="med-name">Lisinopril 10mg</div>
-            <div class="med-res">Margaret H. &middot; Room 14</div>
-            <div class="prog"><div class="prog-fill" style="width:60%;background:var(--blue)"></div></div>
-            <div class="med-foot"><span class="badge badge-blue">Due 12:00 PM</span><span style="font-size:11px;color:var(--text3)">1x daily</span></div>
-          </div>
-          <div class="med-card">
-            <div class="med-name">Donepezil 5mg</div>
-            <div class="med-res">Eleanor N. &middot; Room 82</div>
-            <div class="prog"><div class="prog-fill" style="width:100%;background:var(--green)"></div></div>
-            <div class="med-foot"><span class="badge badge-green">Given 08:00</span><span style="font-size:11px;color:var(--text3)">1x daily</span></div>
-          </div>
-          <div class="med-card">
-            <div class="med-name">Atorvastatin 20mg</div>
-            <div class="med-res">James W. &middot; Room 101</div>
-            <div class="prog"><div class="prog-fill" style="width:100%;background:var(--green)"></div></div>
-            <div class="med-foot"><span class="badge badge-green">Given 08:30</span><span style="font-size:11px;color:var(--text3)">1x daily</span></div>
-          </div>
-          <div class="med-card">
-            <div class="med-name">Furosemide 40mg</div>
-            <div class="med-res">Dorothy R. &middot; Room 23</div>
-            <div class="prog"><div class="prog-fill" style="width:75%;background:var(--amber)"></div></div>
-            <div class="med-foot"><span class="badge badge-amber">Due 2:00 PM</span><span style="font-size:11px;color:var(--text3)">2x daily</span></div>
-          </div>
-          <div class="med-card">
-            <div class="med-name">Warfarin 5mg</div>
-            <div class="med-res">Harold B. &middot; Room 68</div>
-            <div class="prog"><div class="prog-fill" style="width:100%;background:var(--green)"></div></div>
-            <div class="med-foot"><span class="badge badge-green">Given 09:00</span><span style="font-size:11px;color:var(--text3)">1x daily</span></div>
-          </div>
-        </div>
+      <div class="card">
+        <div id="residents-list"><div class="loading"><div class="spinner"></div>Loading...</div></div>
       </div>
+    </div>
 
-      <!-- ── INCIDENTS ── -->
-      <div class="page" id="page-incidents">
-        <div id="ilist">
-          <div class="card" style="margin-bottom:14px">
-            <div class="card-head"><span class="card-title">Open incidents</span><span class="badge badge-red">3 open</span></div>
-            <div class="irow"><div class="idot dot-red"></div><div><div class="ititle">Fall — Room 14, Margaret H.</div><div class="imeta">08:42 AM today &middot; Critical &middot; Reported by N. Patel</div></div></div>
-            <div class="irow"><div class="idot dot-amber"></div><div><div class="ititle">Medication missed — Room 47, Robert K.</div><div class="imeta">07:15 AM today &middot; Moderate &middot; Reported by K. Singh</div></div></div>
-            <div class="irow" style="border:none"><div class="idot dot-blue"></div><div><div class="ititle">Behavioural concern — Room 62</div><div class="imeta">Yesterday 9:30 PM &middot; Low &middot; Pending review</div></div></div>
-          </div>
-          <button class="btn btn-danger" onclick="openInc()">+ Report new incident</button>
-        </div>
-
-        <div id="iform" style="display:none">
-          <div class="form-panel">
-            <div class="form-panel-title">Report an incident</div>
-            <div style="margin-bottom:14px">
-              <label class="flbl">Incident type</label>
-              <div class="tag-row">
-                <div class="tag" onclick="selTag(this,'r')">Fall</div>
-                <div class="tag" onclick="selTag(this,'r')">Emergency</div>
-                <div class="tag" onclick="selTag(this,'a')">Medication error</div>
-                <div class="tag" onclick="selTag(this,'a')">Behavioural</div>
-                <div class="tag" onclick="selTag(this,'b')">Skin integrity</div>
-                <div class="tag" onclick="selTag(this,'b')">Other</div>
-              </div>
-            </div>
-            <div class="f2" style="margin-bottom:14px">
-              <div>
-                <label class="flbl">Room number</label>
-                <input class="finput" style="margin:0" placeholder="e.g. 14" />
-              </div>
-              <div>
-                <label class="flbl">Severity</label>
-                <select class="finput" style="margin:0"><option>Critical</option><option>Moderate</option><option>Low</option></select>
-              </div>
-            </div>
-            <label class="flbl">Resident name</label>
-            <input class="finput" placeholder="Full name" />
-            <label class="flbl">Description</label>
-            <textarea class="finput" rows="3" placeholder="Describe what happened..."></textarea>
-            <label class="flbl">Reported by</label>
-            <input class="finput" placeholder="Staff name" />
-            <div style="display:flex;gap:10px;margin-top:4px">
-              <button class="btn btn-primary">Submit report</button>
-              <button class="btn" onclick="cancelInc()">Cancel</button>
-            </div>
-          </div>
-        </div>
+    <!-- MEDICATIONS -->
+    <div class="page" id="page-medications">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div style="font-size:13px;color:var(--text2)">Medication schedule</div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('med-modal')">+ Add medication</button>
       </div>
+      <div class="med-grid" id="med-list"><div class="loading" style="grid-column:1/-1"><div class="spinner"></div>Loading...</div></div>
+    </div>
 
-      <!-- ── SHIFT NOTES ── -->
-      <div class="page" id="page-notes">
-        <div class="form-panel" style="margin-bottom:16px">
-          <div class="form-panel-title">Add shift note</div>
-          <div class="f2" style="margin-bottom:14px">
-            <div>
-              <label class="flbl">Shift</label>
-              <select class="finput" style="margin:0"><option>Day (07:00–15:00)</option><option>Evening (15:00–23:00)</option><option>Night (23:00–07:00)</option></select>
-            </div>
-            <div>
-              <label class="flbl">Staff name</label>
-              <input class="finput" style="margin:0" placeholder="Your name" />
-            </div>
-          </div>
-          <label class="flbl">Note</label>
-          <textarea class="finput" rows="3" placeholder="Handoff details, observations, concerns..."></textarea>
-          <button class="btn btn-primary" style="margin-top:2px">Save note</button>
-        </div>
-        <div class="card">
-          <div class="card-head"><span class="card-title">Today's shift notes</span></div>
-          <div class="nrow">
-            <span class="shift-pill" style="background:var(--sienna-lt);color:var(--sienna-dk)">Day</span>
-            <div style="flex:1">
-              <div class="ititle" style="margin-bottom:3px">N. Patel &mdash; 08:50 AM</div>
-              <div class="imeta">Margaret H. fall documented. Physio notified. Robert K. refused morning meds &mdash; family informed.</div>
-            </div>
-          </div>
-          <div class="nrow" style="border:none">
-            <span class="shift-pill" style="background:var(--warm-100);color:var(--warm-600)">Night</span>
-            <div style="flex:1">
-              <div class="ititle" style="margin-bottom:3px">D. Okafor &mdash; 10:05 PM</div>
-              <div class="imeta">Quiet overnight. Room 62 agitated ~9:30 PM, settled by 10 PM. All other residents stable.</div>
-            </div>
-          </div>
-        </div>
+    <!-- INCIDENTS -->
+    <div class="page" id="page-incidents">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div style="font-size:13px;color:var(--text2)" id="incident-count">Loading incidents...</div>
+        <button class="btn btn-danger btn-sm" onclick="openModal('incident-modal')">+ Report incident</button>
       </div>
+      <div class="card">
+        <div id="incidents-list"><div class="loading"><div class="spinner"></div>Loading...</div></div>
+      </div>
+    </div>
 
-    </div><!-- /content -->
-  </div><!-- /main -->
-</div><!-- /app -->
+    <!-- SHIFT NOTES -->
+    <div class="page" id="page-notes">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div style="font-size:13px;color:var(--text2)">Shift notes</div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('note-modal')">+ Add note</button>
+      </div>
+      <div class="card">
+        <div id="notes-list"><div class="loading"><div class="spinner"></div>Loading...</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ═══ MODALS ═══ -->
+
+<!-- ADD RESIDENT -->
+<div class="modal-bg" id="resident-modal" style="display:none" onclick="if(event.target===this)closeModal('resident-modal')">
+  <div class="modal">
+    <div class="modal-title">Add resident <button class="btn btn-ghost btn-sm" onclick="closeModal('resident-modal')">✕</button></div>
+    <div class="f2">
+      <div><label class="flbl">First name</label><input class="finput" id="r-first" placeholder="First name" /></div>
+      <div><label class="flbl">Last name</label><input class="finput" id="r-last" placeholder="Last name" /></div>
+    </div>
+    <div class="f3">
+      <div><label class="flbl">Room number</label><input class="finput" id="r-room" type="number" placeholder="e.g. 14" min="1" max="129" /></div>
+      <div><label class="flbl">Wing</label><select class="finput" id="r-wing"><option value="">Select...</option><option>A</option><option>B</option><option>C</option><option>D</option></select></div>
+      <div><label class="flbl">Date of birth</label><input class="finput" id="r-dob" type="date" /></div>
+    </div>
+    <label class="flbl">Status</label>
+    <div class="tag-row">
+      <div class="tag sel-g" onclick="selTag(this,'g','r-status','Stable')">Stable</div>
+      <div class="tag" onclick="selTag(this,'r','r-status','Fall risk')">Fall risk</div>
+      <div class="tag" onclick="selTag(this,'a','r-status','Monitoring')">Monitoring</div>
+      <div class="tag" onclick="selTag(this,'b','r-status','Review today')">Review today</div>
+    </div>
+    <input type="hidden" id="r-status" value="Stable" />
+    <label class="flbl">Conditions / notes</label>
+    <textarea class="finput" id="r-notes" rows="2" placeholder="e.g. Diabetes, dementia, mobility issues..."></textarea>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" onclick="saveResident()">Save resident</button>
+      <button class="btn" onclick="closeModal('resident-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MEDICATION -->
+<div class="modal-bg" id="med-modal" style="display:none" onclick="if(event.target===this)closeModal('med-modal')">
+  <div class="modal">
+    <div class="modal-title">Add medication <button class="btn btn-ghost btn-sm" onclick="closeModal('med-modal')">✕</button></div>
+    <div class="f2">
+      <div><label class="flbl">Medication name</label><input class="finput" id="m-name" placeholder="e.g. Metformin 500mg" /></div>
+      <div><label class="flbl">Resident name</label><input class="finput" id="m-resident" placeholder="Resident full name" /></div>
+    </div>
+    <div class="f3">
+      <div><label class="flbl">Room number</label><input class="finput" id="m-room" type="number" placeholder="Room #" /></div>
+      <div><label class="flbl">Frequency</label><select class="finput" id="m-freq"><option>1x daily</option><option>2x daily</option><option>3x daily</option><option>As needed</option><option>Weekly</option></select></div>
+      <div><label class="flbl">Time due</label><input class="finput" id="m-time" type="time" /></div>
+    </div>
+    <label class="flbl">Status</label>
+    <div class="tag-row">
+      <div class="tag" onclick="selTag(this,'b','m-status','Upcoming')">Upcoming</div>
+      <div class="tag sel-g" onclick="selTag(this,'g','m-status','Given')">Given</div>
+      <div class="tag sel-r" onclick="selTag(this,'r','m-status','Overdue')" style="display:none">Overdue</div>
+    </div>
+    <input type="hidden" id="m-status" value="Given" />
+    <label class="flbl">Notes</label>
+    <textarea class="finput" id="m-notes" rows="2" placeholder="Any special instructions..."></textarea>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" onclick="saveMedication()">Save medication</button>
+      <button class="btn" onclick="closeModal('med-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- REPORT INCIDENT -->
+<div class="modal-bg" id="incident-modal" style="display:none" onclick="if(event.target===this)closeModal('incident-modal')">
+  <div class="modal">
+    <div class="modal-title">Report an incident <button class="btn btn-ghost btn-sm" onclick="closeModal('incident-modal')">✕</button></div>
+    <label class="flbl">Incident type</label>
+    <div class="tag-row">
+      <div class="tag sel-r" onclick="selTag(this,'r','i-type','Fall')">Fall</div>
+      <div class="tag" onclick="selTag(this,'r','i-type','Emergency')">Emergency</div>
+      <div class="tag" onclick="selTag(this,'a','i-type','Medication error')">Medication error</div>
+      <div class="tag" onclick="selTag(this,'a','i-type','Behavioural')">Behavioural</div>
+      <div class="tag" onclick="selTag(this,'b','i-type','Skin integrity')">Skin integrity</div>
+      <div class="tag" onclick="selTag(this,'b','i-type','Other')">Other</div>
+    </div>
+    <input type="hidden" id="i-type" value="Fall" />
+    <div class="f2">
+      <div><label class="flbl">Room number</label><input class="finput" id="i-room" type="number" placeholder="Room #" /></div>
+      <div><label class="flbl">Severity</label><select class="finput" id="i-severity"><option>Critical</option><option>Moderate</option><option>Low</option></select></div>
+    </div>
+    <label class="flbl">Resident name</label>
+    <input class="finput" id="i-resident" placeholder="Full name" />
+    <label class="flbl">Description</label>
+    <textarea class="finput" id="i-desc" rows="3" placeholder="Describe what happened, actions taken..."></textarea>
+    <label class="flbl">Reported by</label>
+    <input class="finput" id="i-reporter" placeholder="Staff name" />
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-danger" onclick="saveIncident()">Submit report</button>
+      <button class="btn" onclick="closeModal('incident-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD SHIFT NOTE -->
+<div class="modal-bg" id="note-modal" style="display:none" onclick="if(event.target===this)closeModal('note-modal')">
+  <div class="modal">
+    <div class="modal-title">Add shift note <button class="btn btn-ghost btn-sm" onclick="closeModal('note-modal')">✕</button></div>
+    <div class="f2">
+      <div><label class="flbl">Shift</label><select class="finput" id="n-shift"><option>Day (07:00–15:00)</option><option>Evening (15:00–23:00)</option><option>Night (23:00–07:00)</option></select></div>
+      <div><label class="flbl">Staff name</label><input class="finput" id="n-staff" placeholder="Your name" /></div>
+    </div>
+    <label class="flbl">Note</label>
+    <textarea class="finput" id="n-note" rows="4" placeholder="Handoff details, observations, concerns, follow-ups..."></textarea>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" onclick="saveNote()">Save note</button>
+      <button class="btn" onclick="closeModal('note-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
 
 <script>
-var pageNames = {
-  dashboard: 'Dashboard',
-  rooms: 'Room map',
-  residents: 'Residents',
-  medications: 'Medications',
-  incidents: 'Incidents',
-  notes: 'Shift notes'
-};
+// ═══════════════════════════════════════════════
+//  CONFIGURATION — Replace with your Supabase credentials
+//  Get these from: supabase.com → your project → Settings → API
+// ═══════════════════════════════════════════════
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+// ═══════════════════════════════════════════════
 
+const configured = SUPABASE_URL !== 'YOUR_SUPABASE_URL';
+let db = null;
+
+if (configured) {
+  db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  document.getElementById('config-banner').style.display = 'none';
+}
+
+// ── DATE ──
+const now = new Date();
+const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+document.getElementById('full-date').textContent = now.toLocaleDateString('en-CA', opts);
+document.getElementById('today-date').textContent = now.toLocaleDateString('en-CA', { month:'short', day:'numeric', year:'numeric' });
+
+// ── NAV ──
+const pageNames = { dashboard:'Dashboard', rooms:'Room map', residents:'Residents', medications:'Medications', incidents:'Incidents', notes:'Shift notes' };
 function nav(id, el) {
-  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
-  var pg = document.getElementById('page-' + id);
-  if (pg) pg.classList.add('active');
-
-  document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
-  if (el) {
-    el.classList.add('active');
-  } else {
-    document.querySelectorAll('.nav-item').forEach(function(n) {
-      if (n.textContent.trim().toLowerCase().indexOf(id.substring(0, 4)) >= 0) {
-        n.classList.add('active');
-      }
-    });
-  }
+  document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
+  if (el) el.classList.add('active');
+  else document.querySelectorAll('.ni').forEach(n => { if(n.textContent.trim().toLowerCase().includes(id.slice(0,5))) n.classList.add('active'); });
   document.getElementById('ptitle').textContent = pageNames[id] || id;
+  showPage(id);
+}
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id)?.classList.add('active');
+  if (id === 'dashboard') loadDashboard();
+  else if (id === 'residents') loadResidents();
+  else if (id === 'medications') loadMedications();
+  else if (id === 'incidents') loadIncidents();
+  else if (id === 'notes') loadNotes();
+  else if (id === 'rooms') buildRoomGrid();
 }
 
-function openInc() {
-  document.getElementById('ilist').style.display = 'none';
-  document.getElementById('iform').style.display = 'block';
+// ── MODAL ──
+function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+// ── TOAST ──
+function toast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = isError ? '#991B1B' : '#2C2B28';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-function cancelInc() {
-  document.getElementById('iform').style.display = 'none';
-  document.getElementById('ilist').style.display = 'block';
-}
-
-function selTag(el, color) {
-  el.parentElement.querySelectorAll('.tag').forEach(function(t) { t.className = 'tag'; });
+// ── TAG SELECTOR ──
+function selTag(el, color, hiddenId, value) {
+  el.parentElement.querySelectorAll('.tag').forEach(t => { t.className = 'tag'; });
   el.classList.add('sel-' + color);
+  document.getElementById(hiddenId).value = value;
 }
 
-// Build room grid
-var grid = document.getElementById('rgrid');
-var alertRooms = [14, 47];
-var vacantRooms = [8, 19, 33, 45, 56, 71, 88, 95, 103, 115, 118, 120, 123, 125, 127, 128, 129];
-for (var i = 1; i <= 129; i++) {
-  var cell = document.createElement('div');
-  if (alertRooms.indexOf(i) >= 0) {
-    cell.className = 'rcell rc-alert';
-  } else if (vacantRooms.indexOf(i) >= 0) {
-    cell.className = 'rcell rc-vacant';
-  } else {
-    cell.className = 'rcell rc-occ';
-  }
-  cell.textContent = i;
-  grid.appendChild(cell);
+// ── HELPERS ──
+function avatarColor(name) {
+  const colors = ['av-r','av-b','av-g','av-p','av-a'];
+  let h = 0; for (let c of name) h += c.charCodeAt(0);
+  return colors[h % colors.length];
 }
+function initials(name) {
+  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+}
+function timeAgo(ts) {
+  const diff = (Date.now() - new Date(ts)) / 1000;
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+  return Math.floor(diff/86400) + 'd ago';
+}
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+function severityDot(sev) {
+  if (sev === 'Critical') return 'dot-red';
+  if (sev === 'Moderate') return 'dot-amber';
+  return 'dot-blue';
+}
+function statusBadge(s) {
+  if (s === 'Fall risk') return 'badge-red';
+  if (s === 'Monitoring' || s === 'Review today') return 'badge-amber';
+  if (s === 'Stable') return 'badge-green';
+  return 'badge-gray';
+}
+function medBadge(s) {
+  if (s === 'Overdue') return 'badge-red';
+  if (s === 'Upcoming') return 'badge-blue';
+  return 'badge-green';
+}
+function medProgress(s) {
+  if (s === 'Overdue') return '0%';
+  if (s === 'Upcoming') return '55%';
+  return '100%';
+}
+function medColor(s) {
+  if (s === 'Overdue') return 'var(--sienna)';
+  if (s === 'Upcoming') return 'var(--blue)';
+  return 'var(--green)';
+}
+function shiftColor(shift) {
+  if (shift.includes('Day')) return 'background:var(--sienna-lt);color:var(--sienna-dk)';
+  if (shift.includes('Evening')) return 'background:var(--amber-lt);color:var(--amber)';
+  return 'background:#EDE9FE;color:#6D28D9';
+}
+
+// ── MOCK DATA (shown when not connected) ──
+const mockResidents = [
+  { id:1, first_name:'Margaret', last_name:'H.', room_number:14, wing:'A', status:'Fall risk', conditions:'Diabetes, mobility issues', created_at: new Date(Date.now()-3600000).toISOString() },
+  { id:2, first_name:'Robert', last_name:'K.', room_number:47, wing:'B', status:'Monitoring', conditions:'Hypertension', created_at: new Date(Date.now()-7200000).toISOString() },
+  { id:3, first_name:'Eleanor', last_name:'N.', room_number:82, wing:'C', status:'Stable', conditions:'Dementia', created_at: new Date(Date.now()-86400000).toISOString() },
+  { id:4, first_name:'James', last_name:'W.', room_number:101, wing:'D', status:'Stable', conditions:'Arthritis', created_at: new Date(Date.now()-172800000).toISOString() },
+];
+const mockIncidents = [
+  { id:1, type:'Fall', room_number:14, severity:'Critical', resident_name:'Margaret H.', description:'Resident found on floor beside bed. No apparent injury. Physio notified.', reported_by:'N. Patel', status:'Open', created_at: new Date(Date.now()-5*3600000).toISOString() },
+  { id:2, type:'Medication error', room_number:47, severity:'Moderate', resident_name:'Robert K.', description:'Morning medications refused by resident.', reported_by:'K. Singh', status:'Open', created_at: new Date(Date.now()-8*3600000).toISOString() },
+  { id:3, type:'Behavioural', room_number:62, severity:'Low', resident_name:'Unknown', description:'Agitation observed at 9:30 PM, settled within 30 min.', reported_by:'D. Okafor', status:'Resolved', created_at: new Date(Date.now()-86400000).toISOString() },
+];
+const mockMeds = [
+  { id:1, name:'Metformin 500mg', resident_name:'Robert K.', room_number:47, frequency:'2x daily', time_due:'07:15', status:'Overdue', created_at:new Date().toISOString() },
+  { id:2, name:'Lisinopril 10mg', resident_name:'Margaret H.', room_number:14, frequency:'1x daily', time_due:'12:00', status:'Upcoming', created_at:new Date().toISOString() },
+  { id:3, name:'Donepezil 5mg', resident_name:'Eleanor N.', room_number:82, frequency:'1x daily', time_due:'08:00', status:'Given', created_at:new Date().toISOString() },
+  { id:4, name:'Atorvastatin 20mg', resident_name:'James W.', room_number:101, frequency:'1x daily', time_due:'08:30', status:'Given', created_at:new Date().toISOString() },
+];
+const mockNotes = [
+  { id:1, shift:'Day (07:00–15:00)', staff_name:'N. Patel', note:'Margaret H. fall documented. Physio notified. Robert K. refused morning meds — family informed.', created_at: new Date(Date.now()-5*3600000).toISOString() },
+  { id:2, shift:'Night (23:00–07:00)', staff_name:'D. Okafor', note:'Quiet overnight. Room 62 resident agitated ~9:30 PM, settled by 10 PM. All residents otherwise stable.', created_at: new Date(Date.now()-86400000).toISOString() },
+];
+
+// ── DATA LAYER ──
+async function getData(table, order='created_at') {
+  if (!configured) {
+    if (table==='residents') return mockResidents;
+    if (table==='incidents') return mockIncidents;
+    if (table==='medications') return mockMeds;
+    if (table==='shift_notes') return mockNotes;
+    return [];
+  }
+  const { data, error } = await db.from(table).select('*').order(order, { ascending: false });
+  if (error) { toast('Error loading ' + table, true); return []; }
+  return data || [];
+}
+
+async function insertData(table, obj) {
+  if (!configured) { toast('Connect Supabase to save real data', true); return false; }
+  const { error } = await db.from(table).insert([obj]);
+  if (error) { toast('Save failed: ' + error.message, true); return false; }
+  return true;
+}
+
+// ── DASHBOARD ──
+async function loadDashboard() {
+  const [residents, incidents, meds, notes] = await Promise.all([
+    getData('residents'), getData('incidents'), getData('medications'), getData('shift_notes')
+  ]);
+  const today = todayStr();
+  const todayNotes = notes.filter(n => n.created_at?.startsWith(today));
+  const openInc = incidents.filter(i => i.status !== 'Resolved');
+  const givenMeds = meds.filter(m => m.status === 'Given');
+  const upcomingMeds = meds.filter(m => m.status === 'Upcoming');
+  const overdueMeds = meds.filter(m => m.status === 'Overdue');
+
+  document.getElementById('stat-residents').textContent = residents.length;
+  document.getElementById('stat-rooms').textContent = `of 129 rooms occupied`;
+  document.getElementById('stat-meds').textContent = meds.length;
+  document.getElementById('stat-meds-sub').textContent = `${upcomingMeds.length} upcoming`;
+  document.getElementById('stat-incidents').textContent = openInc.length;
+  document.getElementById('stat-inc-sub').textContent = openInc.filter(i=>i.severity==='Critical').length + ' critical';
+  document.getElementById('stat-notes').textContent = todayNotes.length;
+  document.getElementById('dash-inc-badge').textContent = openInc.length + ' open';
+  document.getElementById('med-snap-badge').textContent = meds.length + ' scheduled';
+  document.getElementById('ms-given').textContent = givenMeds.length;
+  document.getElementById('ms-upcoming').textContent = upcomingMeds.length;
+  document.getElementById('ms-overdue').textContent = overdueMeds.length;
+
+  // Residents preview
+  const rEl = document.getElementById('dash-residents');
+  if (!residents.length) { rEl.innerHTML = '<div class="empty-state"><p>No residents yet. Add one using the button above.</p></div>'; }
+  else {
+    rEl.innerHTML = residents.slice(0,5).map(r => `
+      <div class="rrow">
+        <div class="avatar ${avatarColor(r.first_name+r.last_name)}">${initials(r.first_name+' '+r.last_name)}</div>
+        <div class="rinfo"><div class="rname">${r.first_name} ${r.last_name}</div><div class="rmeta">Room ${r.room_number} &middot; Wing ${r.wing||'—'}</div></div>
+        <span class="badge ${statusBadge(r.status)}">${r.status||'Stable'}</span>
+      </div>`).join('') + (residents.length>5 ? `<div class="rrow" style="color:var(--text3);font-size:12px;cursor:default">+${residents.length-5} more residents</div>` : '');
+  }
+
+  // Incidents preview
+  const iEl = document.getElementById('dash-incidents');
+  if (!incidents.length) { iEl.innerHTML = '<div class="empty-state"><p>No incidents logged yet.</p></div>'; }
+  else {
+    iEl.innerHTML = incidents.slice(0,4).map(i => `
+      <div class="irow">
+        <div class="idot ${severityDot(i.severity)}"></div>
+        <div><div class="ititle">${i.type} — Room ${i.room_number}, ${i.resident_name}</div><div class="imeta">${timeAgo(i.created_at)} &middot; ${i.severity} &middot; ${i.reported_by}</div></div>
+      </div>`).join('');
+  }
+}
+
+// ── RESIDENTS ──
+async function loadResidents() {
+  const residents = await getData('residents');
+  document.getElementById('resident-count').textContent = `${residents.length} resident${residents.length!==1?'s':''} registered`;
+  const el = document.getElementById('residents-list');
+  if (!residents.length) { el.innerHTML = '<div class="empty-state"><p>No residents yet.</p></div>'; return; }
+  el.innerHTML = residents.map(r => `
+    <div class="rrow">
+      <div class="avatar ${avatarColor(r.first_name+r.last_name)}">${initials(r.first_name+' '+r.last_name)}</div>
+      <div class="rinfo">
+        <div class="rname">${r.first_name} ${r.last_name}</div>
+        <div class="rmeta">Room ${r.room_number} &middot; Wing ${r.wing||'—'} &middot; ${r.conditions||'No conditions noted'}</div>
+      </div>
+      <span class="badge ${statusBadge(r.status)}">${r.status||'Stable'}</span>
+    </div>`).join('');
+}
+
+async function saveResident() {
+  const first = document.getElementById('r-first').value.trim();
+  const last = document.getElementById('r-last').value.trim();
+  const room = document.getElementById('r-room').value;
+  if (!first || !last || !room) { toast('Please fill in name and room number', true); return; }
+  const ok = await insertData('residents', {
+    first_name: first, last_name: last, room_number: parseInt(room),
+    wing: document.getElementById('r-wing').value,
+    date_of_birth: document.getElementById('r-dob').value || null,
+    status: document.getElementById('r-status').value,
+    conditions: document.getElementById('r-notes').value,
+  });
+  if (ok) {
+    toast('Resident added successfully');
+    closeModal('resident-modal');
+    ['r-first','r-last','r-room','r-dob','r-notes'].forEach(id => document.getElementById(id).value='');
+    loadResidents(); loadDashboard();
+  }
+}
+
+// ── MEDICATIONS ──
+async function loadMedications() {
+  const meds = await getData('medications');
+  const el = document.getElementById('med-list');
+  if (!meds.length) { el.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><p>No medications logged yet.</p></div>'; return; }
+  el.innerHTML = meds.map(m => `
+    <div class="med-card">
+      <div class="med-name">${m.name}</div>
+      <div class="med-res">${m.resident_name} &middot; Room ${m.room_number}</div>
+      <div class="prog"><div class="prog-fill" style="width:${medProgress(m.status)};background:${medColor(m.status)}"></div></div>
+      <div class="med-foot">
+        <span class="badge ${medBadge(m.status)}">${m.status}${m.time_due?' '+m.time_due:''}</span>
+        <span style="font-size:11px;color:var(--text3)">${m.frequency||'1x daily'}</span>
+      </div>
+    </div>`).join('');
+}
+
+async function saveMedication() {
+  const name = document.getElementById('m-name').value.trim();
+  const resident = document.getElementById('m-resident').value.trim();
+  const room = document.getElementById('m-room').value;
+  if (!name || !resident || !room) { toast('Please fill in medication name, resident and room', true); return; }
+  const ok = await insertData('medications', {
+    name, resident_name: resident, room_number: parseInt(room),
+    frequency: document.getElementById('m-freq').value,
+    time_due: document.getElementById('m-time').value || null,
+    status: document.getElementById('m-status').value,
+    notes: document.getElementById('m-notes').value,
+  });
+  if (ok) {
+    toast('Medication saved');
+    closeModal('med-modal');
+    ['m-name','m-resident','m-room','m-time','m-notes'].forEach(id => document.getElementById(id).value='');
+    loadMedications(); loadDashboard();
+  }
+}
+
+// ── INCIDENTS ──
+async function loadIncidents() {
+  const incidents = await getData('incidents');
+  const open = incidents.filter(i => i.status !== 'Resolved');
+  document.getElementById('incident-count').textContent = `${incidents.length} incident${incidents.length!==1?'s':''} logged &middot; ${open.length} open`;
+  const el = document.getElementById('incidents-list');
+  if (!incidents.length) { el.innerHTML = '<div class="empty-state"><p>No incidents logged. Use the button above to report one.</p></div>'; return; }
+  el.innerHTML = incidents.map(i => `
+    <div class="irow">
+      <div class="idot ${severityDot(i.severity)}"></div>
+      <div style="flex:1">
+        <div class="ititle">${i.type} — Room ${i.room_number}, ${i.resident_name}</div>
+        <div class="imeta">${i.description?.slice(0,80)}${i.description?.length>80?'…':''}</div>
+        <div class="imeta" style="margin-top:3px">${timeAgo(i.created_at)} &middot; ${i.severity} &middot; ${i.reported_by} &middot; <span style="color:${i.status==='Resolved'?'var(--green)':'var(--sienna-dk)'}">${i.status||'Open'}</span></div>
+      </div>
+    </div>`).join('');
+}
+
+async function saveIncident() {
+  const type = document.getElementById('i-type').value;
+  const resident = document.getElementById('i-resident').value.trim();
+  const room = document.getElementById('i-room').value;
+  const desc = document.getElementById('i-desc').value.trim();
+  const reporter = document.getElementById('i-reporter').value.trim();
+  if (!room || !resident || !desc || !reporter) { toast('Please fill in all fields', true); return; }
+  const ok = await insertData('incidents', {
+    type, room_number: parseInt(room),
+    severity: document.getElementById('i-severity').value,
+    resident_name: resident, description: desc,
+    reported_by: reporter, status: 'Open',
+  });
+  if (ok) {
+    toast('Incident reported');
+    closeModal('incident-modal');
+    ['i-room','i-resident','i-desc','i-reporter'].forEach(id => document.getElementById(id).value='');
+    loadIncidents(); loadDashboard();
+  }
+}
+
+// ── NOTES ──
+async function loadNotes() {
+  const notes = await getData('shift_notes');
+  const el = document.getElementById('notes-list');
+  if (!notes.length) { el.innerHTML = '<div class="empty-state"><p>No shift notes yet.</p></div>'; return; }
+  el.innerHTML = notes.map(n => `
+    <div class="nrow">
+      <span class="shift-pill" style="${shiftColor(n.shift)}">${n.shift.split(' ')[0]}</span>
+      <div style="flex:1">
+        <div class="ititle">${n.staff_name} &mdash; ${timeAgo(n.created_at)}</div>
+        <div class="imeta" style="margin-top:3px;line-height:1.6">${n.note}</div>
+      </div>
+    </div>`).join('');
+}
+
+async function saveNote() {
+  const staff = document.getElementById('n-staff').value.trim();
+  const note = document.getElementById('n-note').value.trim();
+  if (!staff || !note) { toast('Please enter staff name and note', true); return; }
+  const ok = await insertData('shift_notes', {
+    shift: document.getElementById('n-shift').value,
+    staff_name: staff, note,
+  });
+  if (ok) {
+    toast('Note saved');
+    closeModal('note-modal');
+    ['n-staff','n-note'].forEach(id => document.getElementById(id).value='');
+    loadNotes(); loadDashboard();
+  }
+}
+
+// ── ROOM GRID ──
+let occupiedRooms = [];
+async function buildRoomGrid() {
+  const residents = await getData('residents');
+  const incidents = await getData('incidents');
+  occupiedRooms = residents.map(r => r.room_number);
+  const alertRooms = incidents.filter(i=>i.status!=='Resolved').map(i=>i.room_number);
+  const grid = document.getElementById('rgrid');
+  grid.innerHTML = '';
+  for (let i = 1; i <= 129; i++) {
+    const cell = document.createElement('div');
+    const isAlert = alertRooms.includes(i);
+    const isOcc = occupiedRooms.includes(i);
+    cell.className = 'rcell ' + (isAlert ? 'rc-alert' : isOcc ? 'rc-occ' : 'rc-vacant');
+    cell.textContent = i;
+    if (isOcc || isAlert) {
+      cell.onclick = () => showRoomDetail(i, residents, incidents);
+    }
+    grid.appendChild(cell);
+  }
+}
+
+function showRoomDetail(room, residents, incidents) {
+  const r = residents.find(x => x.room_number === room);
+  const inc = incidents.filter(x => x.room_number === room && x.status !== 'Resolved');
+  const title = document.getElementById('room-detail-title');
+  const body = document.getElementById('room-detail-body');
+  if (r) {
+    title.textContent = `Room ${room} — ${r.first_name} ${r.last_name}`;
+    body.innerHTML = `
+      <div style="font-size:12px;color:var(--text3);margin-bottom:9px">Wing ${r.wing||'—'} &middot; Admitted ${r.created_at?.split('T')[0]||'—'}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+        <span class="badge ${statusBadge(r.status)}">${r.status}</span>
+        ${inc.length ? `<span class="badge badge-red">${inc.length} open incident${inc.length>1?'s':''}</span>` : ''}
+      </div>
+      <div style="font-size:12px;color:var(--text2)">${r.conditions||'No conditions noted'}</div>`;
+  }
+}
+
+// ── INIT ──
+loadDashboard();
 </script>
 </body>
 </html>
