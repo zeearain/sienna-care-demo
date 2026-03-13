@@ -708,37 +708,39 @@ function shiftColor(shift) {
   return 'background:#EDE9FE;color:#6D28D9';
 }
 
-// ── MOCK DATA (shown when not connected) ──
+// ── MOCK DATA (shown when not connected to Supabase) ──
 const mockResidents = [
-  { id:1, first_name:'Margaret', last_name:'H.', room_number:14, wing:'1', status:'Fall risk', conditions:'Diabetes, mobility issues', created_at: new Date(Date.now()-3600000).toISOString() },
-  { id:2, first_name:'Robert', last_name:'K.', room_number:47, wing:'2', status:'Monitoring', conditions:'Hypertension', created_at: new Date(Date.now()-7200000).toISOString() },
-  { id:3, first_name:'Eleanor', last_name:'N.', room_number:82, wing:'3', status:'Stable', conditions:'Dementia', created_at: new Date(Date.now()-86400000).toISOString() },
-  { id:4, first_name:'James', last_name:'W.', room_number:101, wing:'3', status:'Stable', conditions:'Arthritis', created_at: new Date(Date.now()-172800000).toISOString() },
+  { id:1, first_name:'Margaret', last_name:'Henderson', room_number:101, wing:'1', status:'Fall risk',    conditions:'Diabetes Type 2, osteoporosis, mobility impairment', created_at: new Date(Date.now()-3600000).toISOString() },
+  { id:2, first_name:'Robert',   last_name:'Kowalski',  room_number:102, wing:'1', status:'Monitoring',  conditions:'Hypertension, chronic kidney disease',                created_at: new Date(Date.now()-7200000).toISOString() },
+  { id:3, first_name:'Eleanor',  last_name:'Nakamura',  room_number:201, wing:'2', status:'Stable',      conditions:'Mild dementia, arthritis',                            created_at: new Date(Date.now()-86400000).toISOString() },
+  { id:4, first_name:'James',    last_name:'Worthington',room_number:301,wing:'3', status:'Stable',      conditions:'Controlled hypertension',                            created_at: new Date(Date.now()-172800000).toISOString() },
 ];
 const mockIncidents = [
-  { id:1, type:'Fall', room_number:14, severity:'Critical', resident_name:'Margaret H.', description:'Resident found on floor beside bed. No apparent injury. Physio notified.', reported_by:'N. Patel', status:'Open', created_at: new Date(Date.now()-5*3600000).toISOString() },
-  { id:2, type:'Medication error', room_number:47, severity:'Moderate', resident_name:'Robert K.', description:'Morning medications refused by resident.', reported_by:'K. Singh', status:'Open', created_at: new Date(Date.now()-8*3600000).toISOString() },
-  { id:3, type:'Behavioural', room_number:62, severity:'Low', resident_name:'Unknown', description:'Agitation observed at 9:30 PM, settled within 30 min.', reported_by:'D. Okafor', status:'Resolved', created_at: new Date(Date.now()-86400000).toISOString() },
+  { id:1, type:'Fall',             room_number:101, severity:'Critical', resident_name:'Margaret Henderson', description:'Resident found on floor beside bed. No apparent injury. Physio notified.', reported_by:'N. Patel', status:'Open',     followup_note:null, updated_by:null, created_at: new Date(Date.now()-5*3600000).toISOString() },
+  { id:2, type:'Medication error', room_number:102, severity:'Moderate', resident_name:'Robert Kowalski',    description:'Morning medications refused by resident.',                                reported_by:'K. Singh', status:'Follow-up', followup_note:'Physician notified, monitoring glucose q4h.', updated_by:'K. Singh', created_at: new Date(Date.now()-8*3600000).toISOString() },
+  { id:3, type:'Behavioural',      room_number:201, severity:'Low',      resident_name:'Eleanor Nakamura',   description:'Agitation observed at 9:30 PM, settled within 30 min.',                  reported_by:'D. Okafor',status:'Resolved', followup_note:null, updated_by:null, created_at: new Date(Date.now()-86400000).toISOString() },
 ];
 const mockMeds = [
-  { id:1, name:'Metformin 500mg', resident_name:'Robert K.', room_number:47, frequency:'2x daily', time_due:'07:15', status:'Overdue', created_at:new Date().toISOString() },
-  { id:2, name:'Lisinopril 10mg', resident_name:'Margaret H.', room_number:14, frequency:'1x daily', time_due:'12:00', status:'Upcoming', created_at:new Date().toISOString() },
-  { id:3, name:'Donepezil 5mg', resident_name:'Eleanor N.', room_number:82, frequency:'1x daily', time_due:'08:00', status:'Given', created_at:new Date().toISOString() },
-  { id:4, name:'Atorvastatin 20mg', resident_name:'James W.', room_number:101, frequency:'1x daily', time_due:'08:30', status:'Given', created_at:new Date().toISOString() },
+  { id:1, name:'Metformin 500mg',  resident_name:'Margaret Henderson', room_number:101, frequency:'2x daily', time_due:'08:00', status:'Overdue',  notes:'Take with food. Monitor blood glucose.', created_at:new Date().toISOString() },
+  { id:2, name:'Lisinopril 10mg',  resident_name:'Robert Kowalski',    room_number:102, frequency:'1x daily', time_due:'12:00', status:'Upcoming', notes:'Hold if systolic < 100.',                created_at:new Date().toISOString() },
+  { id:3, name:'Donepezil 10mg',   resident_name:'Eleanor Nakamura',   room_number:201, frequency:'1x daily', time_due:'21:00', status:'Given',    notes:'Administer at bedtime.',                 created_at:new Date().toISOString() },
+  { id:4, name:'Ramipril 5mg',     resident_name:'James Worthington',  room_number:301, frequency:'1x daily', time_due:'08:00', status:'Given',    notes:'Monitor BP weekly.',                     created_at:new Date().toISOString() },
 ];
 const mockNotes = [
-  { id:1, shift:'Day (07:00–15:00)', staff_name:'N. Patel', note:'Margaret H. fall documented. Physio notified. Robert K. refused morning meds — family informed.', created_at: new Date(Date.now()-5*3600000).toISOString() },
-  { id:2, shift:'Night (23:00–07:00)', staff_name:'D. Okafor', note:'Quiet overnight. Room 62 resident agitated ~9:30 PM, settled by 10 PM. All residents otherwise stable.', created_at: new Date(Date.now()-86400000).toISOString() },
+  { id:1, shift:'Day (07:00–15:00)',   staff_name:'N. Patel RN',   note:'Room 101 — Margaret Henderson fall documented at 0640. Physio notified. Room 102 — Robert refused morning meds, physician aware, monitoring glucose q4h.', created_at: new Date(Date.now()-3*3600000).toISOString() },
+  { id:2, shift:'Night (23:00–07:00)', staff_name:'D. Okafor HCA', note:'Room 201 — Eleanor Nakamura agitated briefly at 2130, settled with redirection. All other residents stable overnight.', created_at: new Date(Date.now()-10*3600000).toISOString() },
 ];
 
 // ── DATA LAYER ──
+const mockFallback = { residents: mockResidents, incidents: mockIncidents, medications: mockMeds, shift_notes: mockNotes };
+
 async function getData(table, order='created_at') {
   try {
     const data = await sbFetch(`${table}?order=${order}.desc&limit=200`);
     return Array.isArray(data) ? data : [];
   } catch(e) {
-    toast('Error loading ' + table + ': ' + e.message, true);
-    return [];
+    // Silently fall back to mock data — don't spam toast on every call
+    return mockFallback[table] || [];
   }
 }
 
@@ -1252,9 +1254,8 @@ function renderFloorGrids(floor) {
   const container = document.getElementById('floor-grids');
   container.innerHTML = '';
   const occupiedRooms = _roomResidents.map(r => r.room_number);
-  const alertRooms = _roomIncidents.filter(i => i.status !== 'Resolved').map(i => i.room_number);
+  const alertRooms = _roomIncidents.filter(i => i.status !== 'Resolved' && i.status !== 'Closed').map(i => i.room_number);
 
-  // Floors: 1 = rooms 101-142, 2 = rooms 201-242, 3 = rooms 301-342
   const floors = [
     { num: 1, start: 101, end: 142 },
     { num: 2, start: 201, end: 242 },
@@ -1276,12 +1277,11 @@ function renderFloorGrids(floor) {
     for (let i = f.start; i <= f.end; i++) {
       const cell = document.createElement('div');
       const isAlert = alertRooms.includes(i);
-      const isOcc = occupiedRooms.includes(i);
+      const isOcc   = occupiedRooms.includes(i);
       cell.className = 'rcell ' + (isAlert ? 'rc-alert' : isOcc ? 'rc-occ' : 'rc-vacant');
       cell.textContent = i;
-      if (isOcc || isAlert) {
-        cell.onclick = () => showRoomDetail(i, _roomResidents, _roomIncidents);
-      }
+      cell.style.cursor = 'pointer';
+      cell.onclick = () => showRoomDetail(i);
       grid.appendChild(cell);
     }
     container.appendChild(grid);
@@ -1296,65 +1296,86 @@ let _rdmIncidents = [];
 let _rdmNotes = [];
 let _rdmActiveTab = 'meds';
 
-async function showRoomDetail(room, residents, incidentList) {
+async function showRoomDetail(room) {
   _rdmRoom = room;
-  _rdmResident = residents.find(x => x.room_number === room) || null;
-  // Fetch fresh data for this room
-  const [allMeds, allInc, allNotes] = await Promise.all([
-    getData('medications'), getData('incidents'), getData('shift_notes')
-  ]);
-  _rdmMeds      = allMeds.filter(m => m.room_number === room);
-  _rdmIncidents = allInc.filter(i => i.room_number === room);
-  // Notes: show ones that mention the room number or resident name
-  const roomStr = String(room);
-  const resName = _rdmResident ? `${_rdmResident.first_name} ${_rdmResident.last_name}`.toLowerCase() : '';
-  _rdmNotes = allNotes.filter(n =>
-    n.note?.includes(roomStr) || (resName && n.note?.toLowerCase().includes(resName.split(' ')[0]))
-  );
 
-  // Header
-  if (_rdmResident) {
-    const r = _rdmResident;
-    document.getElementById('rdm-title').textContent = `Room ${room} — ${r.first_name} ${r.last_name}`;
-    document.getElementById('rdm-meta').textContent =
-      `Floor ${r.wing||'—'}  ·  DOB: ${r.date_of_birth||'—'}  ·  Admitted: ${r.created_at?.split('T')[0]||'—'}`;
-    // Badges
-    const openInc = _rdmIncidents.filter(i => i.status !== 'Resolved' && i.status !== 'Closed');
-    const overdueMeds = _rdmMeds.filter(m => m.status === 'Overdue');
-    document.getElementById('rdm-badges').innerHTML =
-      `<span class="badge ${statusBadge(r.status)}">${r.status||'Stable'}</span>` +
-      (openInc.length ? `<span class="badge badge-red">⚠ ${openInc.length} open incident${openInc.length>1?'s':''}</span>` : '') +
-      (overdueMeds.length ? `<span class="badge" style="background:#fde8e4;color:#a32d2d">💊 ${overdueMeds.length} overdue med${overdueMeds.length>1?'s':''}</span>` : '') +
-      (_rdmMeds.length ? `<span class="badge badge-blue">💊 ${_rdmMeds.length} medication${_rdmMeds.length>1?'s':''}</span>` : '');
-    // Conditions
-    document.getElementById('rdm-conditions-wrap').style.display = '';
-    document.getElementById('rdm-conditions').textContent = r.conditions || 'No conditions noted';
-    // Edit button
-    const editBtn = document.getElementById('rdm-edit-btn');
-    editBtn.style.display = 'inline-flex';
-    editBtn.onclick = () => { closeModal('room-detail-modal'); openEditResident(r.id); };
-  } else {
-    document.getElementById('rdm-title').textContent = `Room ${room} — Vacant`;
-    document.getElementById('rdm-meta').textContent = 'No resident currently assigned to this room';
-    document.getElementById('rdm-badges').innerHTML = '<span class="badge" style="background:#f0f0f0;color:#888">Vacant</span>';
-    document.getElementById('rdm-conditions-wrap').style.display = 'none';
-    document.getElementById('rdm-edit-btn').style.display = 'none';
-  }
-
-  // Pre-fill incident/med room in quick-action buttons
-  document.getElementById('i-room').value = room;
-  document.getElementById('m-room').value = room;
-  if (_rdmResident) {
-    const fullName = `${_rdmResident.first_name} ${_rdmResident.last_name}`;
-    document.getElementById('i-resident').value = fullName;
-    document.getElementById('m-resident').value = fullName;
-  }
-
-  // Render default tab
-  _rdmActiveTab = 'meds';
-  document.querySelectorAll('.rdm-tab').forEach((t,i) => t.classList.toggle('active', i===0));
-  renderRdmTab();
+  // Open modal immediately with loading state
+  document.getElementById('rdm-title').textContent = `Room ${room}`;
+  document.getElementById('rdm-meta').textContent  = 'Loading…';
+  document.getElementById('rdm-badges').innerHTML  = '';
+  document.getElementById('rdm-conditions-wrap').style.display = 'none';
+  document.getElementById('rdm-edit-btn').style.display = 'none';
+  document.getElementById('rdm-tab-content').innerHTML =
+    '<div style="display:flex;align-items:center;justify-content:center;padding:32px;gap:10px;color:var(--text3)"><div class="spinner"></div> Loading room data…</div>';
   openModal('room-detail-modal');
+
+  try {
+    // Use cached room-grid residents/incidents if available, else fetch fresh
+    const residents  = _roomResidents.length  ? _roomResidents  : await getData('residents');
+    const incAll     = _roomIncidents.length   ? _roomIncidents  : await getData('incidents');
+    const [meds, allNotes] = await Promise.all([getData('medications'), getData('shift_notes')]);
+
+    _rdmResident  = residents.find(x => x.room_number === room) || null;
+    _rdmMeds      = meds.filter(m => m.room_number === room);
+    _rdmIncidents = incAll.filter(i => i.room_number === room);
+
+    // Match notes mentioning this room number or resident first name
+    const roomStr = String(room);
+    const firstName = _rdmResident?.first_name?.toLowerCase() || '';
+    _rdmNotes = allNotes.filter(n =>
+      n.note?.includes(roomStr) ||
+      (firstName && n.note?.toLowerCase().includes(firstName))
+    );
+
+    // ── Header ──
+    if (_rdmResident) {
+      const r = _rdmResident;
+      document.getElementById('rdm-title').textContent = `Room ${room} — ${r.first_name} ${r.last_name}`;
+      document.getElementById('rdm-meta').textContent  =
+        `Floor ${r.wing||'—'}  ·  DOB: ${r.date_of_birth||'—'}  ·  Since: ${r.created_at?.split('T')[0]||'—'}`;
+
+      const openInc     = _rdmIncidents.filter(i => i.status !== 'Resolved' && i.status !== 'Closed');
+      const overdueMeds = _rdmMeds.filter(m => m.status === 'Overdue');
+      document.getElementById('rdm-badges').innerHTML =
+        `<span class="badge ${statusBadge(r.status)}">${r.status||'Stable'}</span>` +
+        (openInc.length     ? `<span class="badge badge-red">⚠ ${openInc.length} open incident${openInc.length>1?'s':''}</span>` : '') +
+        (overdueMeds.length ? `<span class="badge" style="background:#fde8e4;color:#a32d2d">💊 ${overdueMeds.length} overdue</span>` : '') +
+        (_rdmMeds.length    ? `<span class="badge badge-blue">💊 ${_rdmMeds.length} med${_rdmMeds.length>1?'s':''}</span>` : '');
+
+      document.getElementById('rdm-conditions-wrap').style.display = '';
+      document.getElementById('rdm-conditions').textContent = r.conditions || 'No conditions noted';
+
+      const editBtn = document.getElementById('rdm-edit-btn');
+      editBtn.style.display = 'inline-flex';
+      editBtn.onclick = () => { closeModal('room-detail-modal'); openEditResident(r.id); };
+    } else {
+      document.getElementById('rdm-title').textContent = `Room ${room} — Vacant`;
+      document.getElementById('rdm-meta').textContent  = 'No resident currently assigned';
+      document.getElementById('rdm-badges').innerHTML  = '<span class="badge" style="background:#f0f0f0;color:#888">Vacant</span>';
+    }
+
+    // Pre-fill quick-add buttons
+    document.getElementById('i-room').value = room;
+    document.getElementById('m-room').value = room;
+    if (_rdmResident) {
+      const fullName = `${_rdmResident.first_name} ${_rdmResident.last_name}`;
+      document.getElementById('i-resident').value = fullName;
+      document.getElementById('m-resident').value = fullName;
+    }
+
+    // Render default tab
+    _rdmActiveTab = 'meds';
+    document.querySelectorAll('.rdm-tab').forEach((t, idx) => t.classList.toggle('active', idx === 0));
+    renderRdmTab();
+
+  } catch (err) {
+    document.getElementById('rdm-title').textContent = `Room ${room}`;
+    document.getElementById('rdm-meta').textContent  = 'Could not load room data';
+    document.getElementById('rdm-tab-content').innerHTML =
+      `<div style="color:var(--sienna-dk);font-size:13px;padding:20px;text-align:center">
+        Error loading room details.<br><span style="font-size:11px;color:var(--text3)">${err.message}</span>
+       </div>`;
+  }
 }
 
 function switchRdmTab(tab, btn) {
