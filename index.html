@@ -162,6 +162,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--warm-100);color:var(--tex
 .empty-state{text-align:center;padding:40px 20px;color:var(--text3)}
 .empty-state p{font-size:13px;margin-top:6px}
 
+.rdm-tab{background:none;border:none;padding:8px 14px;font-size:12px;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color 0.15s,border-color 0.15s}
+.rdm-tab:hover{color:var(--text)}
+.rdm-tab.active{color:var(--sienna-dk);border-bottom-color:var(--sienna-dk);font-weight:600}
+.rdm-row{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.rdm-row:last-child{border-bottom:none}
 .clickable-card{cursor:pointer;transition:box-shadow 0.15s,transform 0.15s}
 .clickable-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.10);transform:translateY(-1px)}
 .med-drill-tab.active{background:var(--blue-lt,#e8f0fe);color:#1a56db;border-color:#93c5fd;font-weight:600}
@@ -287,17 +292,30 @@ body{font-family:'DM Sans',sans-serif;background:var(--warm-100);color:var(--tex
         </div>
       </div>
       <div id="floor-grids"></div>
-      <div class="card" style="max-width:340px;margin-top:14px" id="room-detail">
-        <div class="card-head"><span class="card-title" id="room-detail-title">Select a room</span></div>
-        <div style="padding:13px 18px" id="room-detail-body"><div style="font-size:12px;color:var(--text3)">Click any occupied room to view resident details.</div></div>
-      </div>
+      <div style="margin-top:10px;font-size:12px;color:var(--text3);text-align:center">Click any occupied or alert room to view full details</div>
     </div>
 
     <!-- RESIDENTS -->
     <div class="page" id="page-residents">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
         <div style="font-size:13px;color:var(--text2)" id="resident-count">Loading residents...</div>
-        <button class="btn btn-primary btn-sm" onclick="openModal('resident-modal')">+ Add resident</button>
+        <button class="btn btn-primary btn-sm" onclick="openAddResident()">+ Add resident</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <input class="finput" id="resident-search" placeholder="Search by name or room…" style="flex:1;min-width:180px;max-width:320px" oninput="filterResidents()" />
+        <select class="finput" id="resident-floor-filter" style="width:130px" onchange="filterResidents()">
+          <option value="">All floors</option>
+          <option value="1">Floor 1</option>
+          <option value="2">Floor 2</option>
+          <option value="3">Floor 3</option>
+        </select>
+        <select class="finput" id="resident-status-filter" style="width:140px" onchange="filterResidents()">
+          <option value="">All statuses</option>
+          <option value="Stable">Stable</option>
+          <option value="Fall risk">Fall risk</option>
+          <option value="Monitoring">Monitoring</option>
+          <option value="Review today">Review today</option>
+        </select>
       </div>
       <div class="card">
         <div id="residents-list"><div class="loading"><div class="spinner"></div>Loading...</div></div>
@@ -348,16 +366,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--warm-100);color:var(--tex
 
 <!-- ═══ MODALS ═══ -->
 
-<!-- ADD RESIDENT -->
+<!-- ADD / EDIT RESIDENT -->
 <div class="modal-bg" id="resident-modal" style="display:none" onclick="if(event.target===this)closeModal('resident-modal')">
   <div class="modal">
-    <div class="modal-title">Add resident <button class="btn btn-ghost btn-sm" onclick="closeModal('resident-modal')">✕</button></div>
+    <div class="modal-title">
+      <span id="resident-modal-title">Add resident</span>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('resident-modal')">✕</button>
+    </div>
+    <input type="hidden" id="r-id" value="" />
     <div class="f2">
       <div><label class="flbl">First name</label><input class="finput" id="r-first" placeholder="First name" /></div>
       <div><label class="flbl">Last name</label><input class="finput" id="r-last" placeholder="Last name" /></div>
     </div>
     <div class="f3">
-      <div><label class="flbl">Room number</label><input class="finput" id="r-room" type="number" placeholder="e.g. 101" min="1" max="126" /></div>
+      <div><label class="flbl">Room number</label><input class="finput" id="r-room" type="number" placeholder="e.g. 101" min="101" max="342" /></div>
       <div><label class="flbl">Floor</label><select class="finput" id="r-wing"><option value="">Select...</option><option>1</option><option>2</option><option>3</option></select></div>
       <div><label class="flbl">Date of birth</label><input class="finput" id="r-dob" type="date" /></div>
     </div>
@@ -371,9 +393,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--warm-100);color:var(--tex
     <input type="hidden" id="r-status" value="Stable" />
     <label class="flbl">Conditions / notes</label>
     <textarea class="finput" id="r-notes" rows="2" placeholder="e.g. Diabetes, dementia, mobility issues..."></textarea>
-    <div style="display:flex;gap:10px">
-      <button class="btn btn-primary" onclick="saveResident()">Save resident</button>
-      <button class="btn" onclick="closeModal('resident-modal')">Cancel</button>
+    <div style="display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap">
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-primary" id="r-save-btn" onclick="saveResident()">Save resident</button>
+        <button class="btn" onclick="closeModal('resident-modal')">Cancel</button>
+      </div>
+      <button class="btn btn-danger btn-sm" id="r-delete-btn" style="display:none" onclick="deleteResident()">Discharge / remove</button>
     </div>
   </div>
 </div>
@@ -451,6 +476,50 @@ body{font-family:'DM Sans',sans-serif;background:var(--warm-100);color:var(--tex
     <div style="display:flex;gap:10px">
       <button class="btn btn-primary" onclick="saveNote()">Save note</button>
       <button class="btn" onclick="closeModal('note-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ROOM DETAIL MODAL -->
+<div class="modal-bg" id="room-detail-modal" style="display:none" onclick="if(event.target===this)closeModal('room-detail-modal')">
+  <div class="modal" style="max-width:640px;width:96%;max-height:88vh;display:flex;flex-direction:column">
+    <div class="modal-title" style="flex-shrink:0">
+      <div>
+        <div id="rdm-title" style="font-size:16px;font-weight:700"></div>
+        <div id="rdm-meta" style="font-size:12px;color:var(--text3);font-weight:400;margin-top:1px"></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn btn-sm btn-ghost" id="rdm-edit-btn" onclick="closeModal('room-detail-modal')" style="display:none">✏ Edit resident</button>
+        <button class="btn btn-ghost btn-sm" onclick="closeModal('room-detail-modal')">✕</button>
+      </div>
+    </div>
+    <div style="overflow-y:auto;flex:1;padding:0 2px">
+
+      <!-- Status badges row -->
+      <div style="display:flex;gap:7px;flex-wrap:wrap;padding:14px 18px 0" id="rdm-badges"></div>
+
+      <!-- Conditions -->
+      <div style="padding:10px 18px 4px" id="rdm-conditions-wrap">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text3);margin-bottom:5px">Conditions</div>
+        <div id="rdm-conditions" style="font-size:13px;color:var(--text2);line-height:1.6"></div>
+      </div>
+
+      <!-- Tabs -->
+      <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin:14px 18px 0;flex-shrink:0">
+        <button class="rdm-tab active" onclick="switchRdmTab('meds',this)">💊 Medications</button>
+        <button class="rdm-tab" onclick="switchRdmTab('incidents',this)">⚠ Incidents</button>
+        <button class="rdm-tab" onclick="switchRdmTab('notes',this)">📋 Shift notes</button>
+      </div>
+
+      <!-- Tab content -->
+      <div id="rdm-tab-content" style="padding:14px 18px;min-height:120px"></div>
+
+    </div>
+    <!-- Footer actions -->
+    <div style="padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0">
+      <button class="btn btn-sm btn-danger" onclick="closeModal('room-detail-modal');openModal('incident-modal')" id="rdm-report-btn">+ Report incident</button>
+      <button class="btn btn-sm btn-primary" onclick="closeModal('room-detail-modal');openModal('med-modal')" id="rdm-add-med-btn">+ Add medication</button>
+      <button class="btn btn-sm btn-ghost" onclick="closeModal('room-detail-modal')">Close</button>
     </div>
   </div>
 </div>
@@ -713,8 +782,9 @@ async function loadDashboard() {
   const upcomingMeds = meds.filter(m => m.status === 'Upcoming');
   const overdueMeds = meds.filter(m => m.status === 'Overdue');
 
-  document.getElementById('stat-residents').textContent = residents.length;
-  document.getElementById('stat-rooms').textContent = `of 126 rooms occupied`;
+  document.getElementById('stat-residents').textContent = `${residents.length} / 126`;
+  const vacant = 126 - residents.length;
+  document.getElementById('stat-rooms').textContent = vacant >= 0 ? `${vacant} room${vacant!==1?'s':''} vacant` : `⚠ ${Math.abs(vacant)} over capacity`;
   document.getElementById('stat-meds').textContent = meds.length;
   document.getElementById('stat-meds-sub').textContent = `${upcomingMeds.length} upcoming`;
   document.getElementById('stat-incidents').textContent = openInc.length;
@@ -731,11 +801,11 @@ async function loadDashboard() {
   if (!residents.length) { rEl.innerHTML = '<div class="empty-state"><p>No residents yet. Add one using the button above.</p></div>'; }
   else {
     rEl.innerHTML = residents.slice(0,5).map(r => `
-      <div class="rrow">
+      <div class="rrow" onclick="nav('residents',null);showPage('residents');setTimeout(()=>openEditResident(${r.id}),300)" title="Click to edit">
         <div class="avatar ${avatarColor(r.first_name+r.last_name)}">${initials(r.first_name+' '+r.last_name)}</div>
         <div class="rinfo"><div class="rname">${r.first_name} ${r.last_name}</div><div class="rmeta">Room ${r.room_number} &middot; Floor ${r.wing||'—'}</div></div>
         <span class="badge ${statusBadge(r.status)}">${r.status||'Stable'}</span>
-      </div>`).join('') + (residents.length>5 ? `<div class="rrow" style="color:var(--text3);font-size:12px;cursor:default">+${residents.length-5} more residents</div>` : '');
+      </div>`).join('') + (residents.length>5 ? `<div class="rrow" style="color:var(--text3);font-size:12px;cursor:default">+${residents.length-5} more residents — <span style="color:var(--sienna-dk);cursor:pointer" onclick="nav('residents',null);showPage('residents')">view all</span></div>` : '');
   }
 
   // Incidents preview
@@ -829,39 +899,133 @@ function renderMedDrillList() {
 }
 
 // ── RESIDENTS ──
+// ── RESIDENTS ──
+let _allResidents = [];
+
 async function loadResidents() {
-  const residents = await getData('residents');
-  document.getElementById('resident-count').textContent = `${residents.length} resident${residents.length!==1?'s':''} registered`;
+  _allResidents = await getData('residents');
+  updateResidentCount();
+  renderResidents(_allResidents);
+}
+
+function updateResidentCount() {
+  const n = _allResidents.length;
+  const vacant = 126 - n;
+  const vacantStr = vacant >= 0 ? `· ${vacant} vacant` : `· ⚠ ${Math.abs(vacant)} over capacity`;
+  document.getElementById('resident-count').textContent = `${n} of 126 rooms occupied ${vacantStr}`;
+}
+
+function filterResidents() {
+  const q = (document.getElementById('resident-search')?.value || '').toLowerCase();
+  const floor = document.getElementById('resident-floor-filter')?.value || '';
+  const status = document.getElementById('resident-status-filter')?.value || '';
+  const filtered = _allResidents.filter(r => {
+    const name = `${r.first_name} ${r.last_name}`.toLowerCase();
+    const room = String(r.room_number);
+    const matchQ = !q || name.includes(q) || room.includes(q);
+    const matchFloor = !floor || r.wing === floor;
+    const matchStatus = !status || r.status === status;
+    return matchQ && matchFloor && matchStatus;
+  });
+  renderResidents(filtered);
+}
+
+function renderResidents(list) {
   const el = document.getElementById('residents-list');
-  if (!residents.length) { el.innerHTML = '<div class="empty-state"><p>No residents yet.</p></div>'; return; }
-  el.innerHTML = residents.map(r => `
-    <div class="rrow">
+  if (!list.length) { el.innerHTML = '<div class="empty-state"><p>No residents match your search.</p></div>'; return; }
+  el.innerHTML = list.map(r => `
+    <div class="rrow" onclick="openEditResident(${r.id})">
       <div class="avatar ${avatarColor(r.first_name+r.last_name)}">${initials(r.first_name+' '+r.last_name)}</div>
-      <div class="rinfo">
+      <div class="rinfo" style="flex:1">
         <div class="rname">${r.first_name} ${r.last_name}</div>
-        <div class="rmeta">Room ${r.room_number} &middot; Floor ${r.wing||'—'} &middot; ${r.conditions||'No conditions noted'}</div>
+        <div class="rmeta">Room ${r.room_number} &middot; Floor ${r.wing||'—'} &middot; ${r.conditions?.slice(0,60)||'No conditions noted'}${r.conditions?.length>60?'…':''}</div>
       </div>
       <span class="badge ${statusBadge(r.status)}">${r.status||'Stable'}</span>
+      <button class="btn btn-ghost btn-sm" style="margin-left:4px;font-size:11px" onclick="event.stopPropagation();openEditResident(${r.id})">✏ Edit</button>
     </div>`).join('');
 }
 
+function openAddResident() {
+  document.getElementById('resident-modal-title').textContent = 'Add resident';
+  document.getElementById('r-id').value = '';
+  document.getElementById('r-save-btn').textContent = 'Add resident';
+  document.getElementById('r-delete-btn').style.display = 'none';
+  ['r-first','r-last','r-room','r-dob','r-notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('r-wing').value = '';
+  // Reset status tags to Stable
+  document.getElementById('r-status').value = 'Stable';
+  document.querySelectorAll('#resident-modal .tag').forEach(t => t.classList.remove('active'));
+  const stableTag = Array.from(document.querySelectorAll('#resident-modal .tag')).find(t => t.textContent.trim() === 'Stable');
+  if (stableTag) stableTag.classList.add('active');
+  openModal('resident-modal');
+}
+
+function openEditResident(id) {
+  const r = _allResidents.find(x => x.id === id);
+  if (!r) return;
+  document.getElementById('resident-modal-title').textContent = `Edit — ${r.first_name} ${r.last_name}`;
+  document.getElementById('r-id').value = id;
+  document.getElementById('r-save-btn').textContent = 'Save changes';
+  document.getElementById('r-delete-btn').style.display = 'inline-flex';
+  document.getElementById('r-first').value = r.first_name || '';
+  document.getElementById('r-last').value = r.last_name || '';
+  document.getElementById('r-room').value = r.room_number || '';
+  document.getElementById('r-wing').value = r.wing || '';
+  document.getElementById('r-dob').value = r.date_of_birth || '';
+  document.getElementById('r-notes').value = r.conditions || '';
+  // Set status
+  const s = r.status || 'Stable';
+  document.getElementById('r-status').value = s;
+  document.querySelectorAll('#resident-modal .tag').forEach(t => {
+    t.classList.remove('active');
+    if (t.textContent.trim() === s) t.classList.add('active');
+  });
+  openModal('resident-modal');
+}
+
 async function saveResident() {
+  const id = document.getElementById('r-id').value;
   const first = document.getElementById('r-first').value.trim();
   const last = document.getElementById('r-last').value.trim();
-  const room = document.getElementById('r-room').value;
+  const room = parseInt(document.getElementById('r-room').value);
   if (!first || !last || !room) { toast('Please fill in name and room number', true); return; }
-  const ok = await insertData('residents', {
-    first_name: first, last_name: last, room_number: parseInt(room),
+  // Check for duplicate room (skip self when editing)
+  const dupe = _allResidents.find(r => r.room_number === room && String(r.id) !== String(id));
+  if (dupe) {
+    toast(`Room ${room} is already occupied by ${dupe.first_name} ${dupe.last_name}`, true);
+    return;
+  }
+  const payload = {
+    first_name: first, last_name: last, room_number: room,
     wing: document.getElementById('r-wing').value,
     date_of_birth: document.getElementById('r-dob').value || null,
     status: document.getElementById('r-status').value,
     conditions: document.getElementById('r-notes').value,
-  });
+  };
+  const ok = id
+    ? await updateData('residents', id, payload)
+    : await insertData('residents', payload);
   if (ok) {
-    toast('Resident added successfully');
+    toast(id ? 'Resident updated' : 'Resident added');
     closeModal('resident-modal');
-    ['r-first','r-last','r-room','r-dob','r-notes'].forEach(id => document.getElementById(id).value='');
-    loadResidents(); loadDashboard();
+    await loadResidents();
+    loadDashboard();
+  }
+}
+
+async function deleteResident() {
+  const id = document.getElementById('r-id').value;
+  const first = document.getElementById('r-first').value;
+  const last = document.getElementById('r-last').value;
+  if (!confirm(`Discharge and remove ${first} ${last}? This cannot be undone.`)) return;
+  try {
+    await sbFetch('residents?id=eq.' + id, { method: 'DELETE' });
+    toast(`${first} ${last} discharged`);
+    closeModal('resident-modal');
+    await loadResidents();
+    loadDashboard();
+  } catch(e) {
+    toast('Delete failed: ' + e.message, true);
   }
 }
 
@@ -1124,20 +1288,141 @@ function renderFloorGrids(floor) {
   });
 }
 
-function showRoomDetail(room, residents, incidents) {
-  const r = residents.find(x => x.room_number === room);
-  const inc = incidents.filter(x => x.room_number === room && x.status !== 'Resolved');
-  const title = document.getElementById('room-detail-title');
-  const body = document.getElementById('room-detail-body');
-  if (r) {
-    title.textContent = `Room ${room} — ${r.first_name} ${r.last_name}`;
-    body.innerHTML = `
-      <div style="font-size:12px;color:var(--text3);margin-bottom:9px">Floor ${r.wing||'—'} &middot; Admitted ${r.created_at?.split('T')[0]||'—'}</div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
-        <span class="badge ${statusBadge(r.status)}">${r.status}</span>
-        ${inc.length ? `<span class="badge badge-red">${inc.length} open incident${inc.length>1?'s':''}</span>` : ''}
-      </div>
-      <div style="font-size:12px;color:var(--text2)">${r.conditions||'No conditions noted'}</div>`;
+// ── ROOM DETAIL MODAL ──
+let _rdmRoom = null;
+let _rdmResident = null;
+let _rdmMeds = [];
+let _rdmIncidents = [];
+let _rdmNotes = [];
+let _rdmActiveTab = 'meds';
+
+async function showRoomDetail(room, residents, incidentList) {
+  _rdmRoom = room;
+  _rdmResident = residents.find(x => x.room_number === room) || null;
+  // Fetch fresh data for this room
+  const [allMeds, allInc, allNotes] = await Promise.all([
+    getData('medications'), getData('incidents'), getData('shift_notes')
+  ]);
+  _rdmMeds      = allMeds.filter(m => m.room_number === room);
+  _rdmIncidents = allInc.filter(i => i.room_number === room);
+  // Notes: show ones that mention the room number or resident name
+  const roomStr = String(room);
+  const resName = _rdmResident ? `${_rdmResident.first_name} ${_rdmResident.last_name}`.toLowerCase() : '';
+  _rdmNotes = allNotes.filter(n =>
+    n.note?.includes(roomStr) || (resName && n.note?.toLowerCase().includes(resName.split(' ')[0]))
+  );
+
+  // Header
+  if (_rdmResident) {
+    const r = _rdmResident;
+    document.getElementById('rdm-title').textContent = `Room ${room} — ${r.first_name} ${r.last_name}`;
+    document.getElementById('rdm-meta').textContent =
+      `Floor ${r.wing||'—'}  ·  DOB: ${r.date_of_birth||'—'}  ·  Admitted: ${r.created_at?.split('T')[0]||'—'}`;
+    // Badges
+    const openInc = _rdmIncidents.filter(i => i.status !== 'Resolved' && i.status !== 'Closed');
+    const overdueMeds = _rdmMeds.filter(m => m.status === 'Overdue');
+    document.getElementById('rdm-badges').innerHTML =
+      `<span class="badge ${statusBadge(r.status)}">${r.status||'Stable'}</span>` +
+      (openInc.length ? `<span class="badge badge-red">⚠ ${openInc.length} open incident${openInc.length>1?'s':''}</span>` : '') +
+      (overdueMeds.length ? `<span class="badge" style="background:#fde8e4;color:#a32d2d">💊 ${overdueMeds.length} overdue med${overdueMeds.length>1?'s':''}</span>` : '') +
+      (_rdmMeds.length ? `<span class="badge badge-blue">💊 ${_rdmMeds.length} medication${_rdmMeds.length>1?'s':''}</span>` : '');
+    // Conditions
+    document.getElementById('rdm-conditions-wrap').style.display = '';
+    document.getElementById('rdm-conditions').textContent = r.conditions || 'No conditions noted';
+    // Edit button
+    const editBtn = document.getElementById('rdm-edit-btn');
+    editBtn.style.display = 'inline-flex';
+    editBtn.onclick = () => { closeModal('room-detail-modal'); openEditResident(r.id); };
+  } else {
+    document.getElementById('rdm-title').textContent = `Room ${room} — Vacant`;
+    document.getElementById('rdm-meta').textContent = 'No resident currently assigned to this room';
+    document.getElementById('rdm-badges').innerHTML = '<span class="badge" style="background:#f0f0f0;color:#888">Vacant</span>';
+    document.getElementById('rdm-conditions-wrap').style.display = 'none';
+    document.getElementById('rdm-edit-btn').style.display = 'none';
+  }
+
+  // Pre-fill incident/med room in quick-action buttons
+  document.getElementById('i-room').value = room;
+  document.getElementById('m-room').value = room;
+  if (_rdmResident) {
+    const fullName = `${_rdmResident.first_name} ${_rdmResident.last_name}`;
+    document.getElementById('i-resident').value = fullName;
+    document.getElementById('m-resident').value = fullName;
+  }
+
+  // Render default tab
+  _rdmActiveTab = 'meds';
+  document.querySelectorAll('.rdm-tab').forEach((t,i) => t.classList.toggle('active', i===0));
+  renderRdmTab();
+  openModal('room-detail-modal');
+}
+
+function switchRdmTab(tab, btn) {
+  _rdmActiveTab = tab;
+  document.querySelectorAll('.rdm-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderRdmTab();
+}
+
+function renderRdmTab() {
+  const el = document.getElementById('rdm-tab-content');
+  if (_rdmActiveTab === 'meds') {
+    if (!_rdmMeds.length) {
+      el.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:20px 0;text-align:center">No medications on record for this room.</div>';
+      return;
+    }
+    const statusBg = s => s==='Given'?'#e6f4ea':s==='Overdue'?'#fde8e4':'#fef3c7';
+    const statusFg = s => s==='Given'?'#1a7f37':s==='Overdue'?'#a32d2d':'#92400e';
+    el.innerHTML = _rdmMeds.map(m => `
+      <div class="rdm-row">
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600;color:var(--text)">${m.name}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">${m.frequency||''}${m.time_due?' · Due '+m.time_due:''}</div>
+          ${m.notes?`<div style="font-size:11px;color:var(--text2);margin-top:3px;line-height:1.5">${m.notes}</div>`:''}
+        </div>
+        <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;white-space:nowrap;background:${statusBg(m.status)};color:${statusFg(m.status)}">${m.status}</span>
+      </div>`).join('');
+  }
+  else if (_rdmActiveTab === 'incidents') {
+    if (!_rdmIncidents.length) {
+      el.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:20px 0;text-align:center">No incidents on record for this room.</div>';
+      return;
+    }
+    const sBg = s => s==='Resolved'?'#e6f4ea':s==='Closed'?'#f0f0f0':s==='Follow-up'?'#fef3c7':'#fde8e4';
+    const sFg = s => s==='Resolved'?'#1a7f37':s==='Closed'?'#666':s==='Follow-up'?'#92400e':'#a32d2d';
+    el.innerHTML = _rdmIncidents.map(i => `
+      <div class="rdm-row">
+        <div class="idot ${severityDot(i.severity)}" style="margin-top:3px;flex-shrink:0"></div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <div style="font-size:13px;font-weight:600;color:var(--text)">${i.type}</div>
+            <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;background:${sBg(i.status)};color:${sFg(i.status)}">${i.status||'Open'}</span>
+          </div>
+          <div style="font-size:12px;color:var(--text2);margin-top:3px;line-height:1.5">${i.description||'—'}</div>
+          ${i.followup_note?`<div style="margin-top:5px;padding:6px 8px;background:var(--warm-100);border-radius:5px;font-size:11px;color:var(--text2)"><strong>Update:</strong> ${i.followup_note}</div>`:''}
+          <div style="font-size:11px;color:var(--text3);margin-top:4px">${timeAgo(i.created_at)} · ${i.severity} · ${i.reported_by}</div>
+          <div style="display:flex;gap:6px;margin-top:7px;flex-wrap:wrap">
+            ${i.status!=='Resolved'?`<button class="btn btn-sm" style="font-size:11px;background:#e6f4ea;border-color:#4caf50;color:#1a7f37" onclick="quickStatus(${i.id},'Resolved');_rdmIncidents.find(x=>x.id===${i.id}).status='Resolved';renderRdmTab()">✓ Resolve</button>`:''}
+            ${i.status!=='Follow-up'?`<button class="btn btn-sm" style="font-size:11px;background:#fef3c7;border-color:#f59e0b;color:#92400e" onclick="quickStatus(${i.id},'Follow-up');_rdmIncidents.find(x=>x.id===${i.id}).status='Follow-up';renderRdmTab()">↩ Follow-up</button>`:''}
+            <button class="btn btn-sm" style="font-size:11px" onclick="closeModal('room-detail-modal');openIncidentAction(${i.id})">✏ Add note</button>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+  else if (_rdmActiveTab === 'notes') {
+    if (!_rdmNotes.length) {
+      el.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:20px 0;text-align:center">No shift notes reference this room or resident.</div>';
+      return;
+    }
+    el.innerHTML = _rdmNotes.map(n => `
+      <div class="rdm-row" style="flex-direction:column;gap:5px">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span class="badge badge-blue" style="font-size:10px">${n.shift}</span>
+          <span style="font-size:12px;font-weight:600;color:var(--text)">${n.staff_name}</span>
+          <span style="font-size:11px;color:var(--text3)">${timeAgo(n.created_at)}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.6">${n.note}</div>
+      </div>`).join('');
   }
 }
 
